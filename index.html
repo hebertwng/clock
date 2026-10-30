@@ -407,11 +407,11 @@
     <div class="left-controls" id="dashLeftControls">
       <button class="cal-toggle" id="btnBackToActivities" data-i18n="btn_activities">📋 Atividades</button>
     </div>
-    <button class="primary" id="btnNewActivityDash" data-i18n="btn_new_activity">+ Nova atividade</button>
     <div class="search-wrap">
       <input type="text" id="searchInputDash" data-i18n-placeholder="search_placeholder" placeholder="🔎 Buscar atividade...">
       <button class="search-clear-btn" id="btnSearchClearDash" style="display:none" data-i18n-title="title_clear_search" data-i18n-aria="title_clear_search" title="Limpar busca" aria-label="Limpar busca">✕</button>
     </div>
+    <button class="primary" id="btnNewActivityDash" data-i18n="btn_new_activity">+ Nova atividade</button>
   </div>
   <hr class="divider">
   <div class="dashboard-content">
@@ -2110,10 +2110,15 @@
       days.push(new Date(today.getFullYear(), today.getMonth(), today.getDate() - i));
     }
     const nowMs = Date.now();
+    const isSearching = !!searchQuery;
     return days.map(d => {
       const key = dayKey(d);
-      const items = appData.activities.filter(a => dayKey(a.createdAt) === key);
-      const hours = getDayTotalMs(key, nowMs) / 3600000;
+      const items = appData.activities.filter(a => dayKey(a.createdAt) === key && (!isSearching || activityMatchesSearch(a, searchQuery)));
+      // While searching, mirror how the main list totals a day: sum of the matching
+      // activities' own elapsed time, rather than the day-spanning getDayTotalMs() total.
+      const hours = isSearching
+        ? items.reduce((sum,a) => sum + getActivityElapsedMs(a, nowMs), 0) / 3600000
+        : getDayTotalMs(key, nowMs) / 3600000;
       return { key, date: d, count: items.length, hours };
     });
   }
@@ -2263,6 +2268,7 @@
     for(const a of appData.activities){
       const createdMs = new Date(a.createdAt).getTime();
       if(createdMs < start || createdMs >= end) continue;
+      if(searchQuery && !activityMatchesSearch(a, searchQuery)) continue;
       const name = a.name || t('activity_no_name');
       totals[name] = (totals[name] || 0) + getActivityElapsedMs(a, nowMs);
     }
@@ -2274,6 +2280,7 @@
     const totals = {};
     for(const a of appData.activities){
       if(dayKey(a.createdAt) !== dayKeyStr) continue;
+      if(searchQuery && !activityMatchesSearch(a, searchQuery)) continue;
       const name = a.name || t('activity_no_name');
       totals[name] = (totals[name] || 0) + getActivityElapsedMs(a, nowMs);
     }
@@ -2575,21 +2582,25 @@
       if(el) el.style.display = hasQuery ? 'inline-block' : 'none';
     });
   }
+  function refreshAfterSearchChange(){
+    render();
+    if(document.getElementById('dashboardModal').style.display === 'flex') renderDashboard();
+  }
   document.getElementById('searchInput').addEventListener('input', (e) => {
     setSearchQuery(e.target.value);
-    render();
+    refreshAfterSearchChange();
   });
   document.getElementById('btnSearchClear').onclick = () => {
     setSearchQuery('');
-    render();
+    refreshAfterSearchChange();
   };
   document.getElementById('searchInputDash').addEventListener('input', (e) => {
     setSearchQuery(e.target.value);
-    render();
+    refreshAfterSearchChange();
   });
   document.getElementById('btnSearchClearDash').onclick = () => {
     setSearchQuery('');
-    render();
+    refreshAfterSearchChange();
   };
 
   // ---------- dashboard export / print ----------
