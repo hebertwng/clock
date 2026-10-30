@@ -1,0 +1,12 @@
+{
+  "name": "CLOCK",
+  "short_name": "CLOCK",
+  "description": "Registro de atividades e controle de horas",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#2f6fed",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

@@ -1,0 +1,2314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLOCK</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232f6fed' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><path d='M12 7v5l3.2 1.9'/></svg>">
+<link rel="manifest" href="manifest.json">
+<style>
+  :root{
+    --bg:#f3f4f7; --panel:#ffffff; --panel-2:#eef0f4; --border:#dde1e8;
+    --text:#1c1f26; --muted:#5b6474; --accent:#2f6fed; --accent-2:#2458c2;
+    --ok:#1f9d55; --warn:#a9710a; --danger:#d23b3b; --danger-2:#b32e2e;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1115; --panel:#171a21; --panel-2:#1e222b; --border:#2a2f3a;
+      --text:#e7e9ee; --muted:#9aa2b1; --accent:#4f8cff; --accent-2:#3a6fd8;
+      --ok:#2ecc71; --warn:#e0a52b; --danger:#e05252; --danger-2:#c43e3e;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1115; --panel:#171a21; --panel-2:#1e222b; --border:#2a2f3a;
+    --text:#e7e9ee; --muted:#9aa2b1; --accent:#4f8cff; --accent-2:#3a6fd8;
+    --ok:#2ecc71; --warn:#e0a52b; --danger:#e05252; --danger-2:#c43e3e;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);padding-bottom:70px}
+
+  .brand{text-align:center;font-size:11px;letter-spacing:3px;color:var(--muted);padding:10px 0 2px}
+  .brand-icon{display:flex;justify-content:center;padding:4px 0 8px;color:var(--accent)}
+  .brand-icon-btn{cursor:pointer}
+  .brand-icon-btn:hover{color:var(--accent-2)}
+  .brand-icon-btn:active{transform:scale(.92)}
+  .brand-icon svg{width:32px;height:32px}
+
+  .top-bar{width:100%;max-width:1100px;margin:0 auto;padding:6px 20px 14px;display:flex;align-items:flex-start;
+    justify-content:flex-start;gap:12px;flex-wrap:wrap}
+  .top-bar > button.primary{margin-left:auto}
+  .divider{border:none;border-top:1px solid var(--border);margin:0}
+
+  button{cursor:pointer;border:1px solid var(--border);background:var(--panel-2);color:var(--text);
+    padding:11px 18px;border-radius:9px;font-size:15px;min-height:46px;touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent}
+  button:hover{border-color:var(--accent)}
+  button:active{transform:scale(.97)}
+  button.primary{background:var(--accent);border-color:var(--accent-2);color:#fff}
+  button.primary:hover{background:var(--accent-2)}
+  button.danger{background:transparent;color:var(--danger)}
+  button.danger:hover{background:var(--danger);color:#fff}
+
+  main{max-width:1100px;margin:0 auto;padding:18px 20px}
+  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+  input[type=text], textarea{
+    width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    border-radius:9px;padding:12px 12px;font-size:16px;font-family:inherit;resize:vertical;min-height:46px}
+  textarea{min-height:60px}
+  .desc-meta-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:2px}
+  .counter{font-size:11px;color:var(--muted);text-align:right}
+  .counter.over{color:var(--danger)}
+  .copy-desc-btn{min-height:24px;min-width:24px;padding:0;font-size:13px;border-radius:6px;
+    background:transparent;border-color:transparent;color:var(--muted);flex-shrink:0}
+  .copy-desc-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--panel-2)}
+  .copy-desc-btn.copied{color:var(--ok);border-color:var(--ok)}
+
+  /* calendar: compact toggle box top-left that opens a subtle popover */
+  .cal-wrap{position:relative}
+  .cal-toggle{background:var(--panel-2)}
+  .cal-popover{position:absolute;top:100%;left:0;margin-top:8px;background:var(--panel);border:1px solid var(--border);
+    border-radius:12px;padding:12px;box-shadow:0 8px 28px rgba(0,0,0,.22);z-index:30;min-width:260px;display:none}
+  .cal-popover .cal-header{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:6px}
+  .cal-popover .cal-header button{min-height:28px;padding:3px 10px;font-size:12px;border-radius:6px;
+    background:transparent;border-color:transparent;color:var(--muted)}
+  .cal-popover .cal-header button:hover{border-color:var(--accent);color:var(--accent)}
+  .cal-popover .cal-month-label{flex:1 1 120px;text-align:center;font-size:12px;color:var(--muted);
+    text-transform:capitalize;order:-1}
+  .cal-popover .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);font-size:10px;color:var(--muted);
+    text-align:center;margin-bottom:3px;opacity:.7}
+  .cal-popover .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+  .cal-cell{aspect-ratio:1;min-height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;
+    font-size:11px;cursor:pointer;position:relative;background:var(--panel-2);border:1px solid transparent;
+    color:var(--muted);touch-action:manipulation}
+  .cal-cell.empty{visibility:hidden;cursor:default}
+  .cal-cell.has-data{color:var(--text)}
+  .cal-cell:hover{border-color:var(--accent)}
+  .cal-cell.today{font-weight:700;border-color:var(--muted);color:var(--text)}
+  .cal-cell.selected{background:var(--accent);color:#fff}
+  .cal-cell.has-data::after{content:'';position:absolute;bottom:2px;width:4px;height:4px;border-radius:50%;background:var(--accent)}
+  .cal-cell.selected.has-data::after{background:#fff}
+
+  .left-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+  .search-wrap{display:flex;align-items:center;gap:6px;flex:0 1 180px;min-width:110px}
+  .search-wrap input[type=text]{min-height:38px;padding:8px 10px;font-size:13px}
+  .search-clear-btn{min-height:38px;padding:0 10px;font-size:12px}
+
+  .sync-warning{position:fixed;top:0;left:0;right:0;background:var(--warn);color:#1c1f26;z-index:90;
+    padding:8px 16px;font-size:13px;display:none;align-items:center;justify-content:center;gap:12px;
+    flex-wrap:wrap;text-align:center}
+  .sync-warning button{min-height:30px;padding:4px 12px;font-size:12px;background:#fff;border-color:transparent}
+
+  .corner-top-right{position:fixed;top:16px;right:16px;z-index:75}
+  #btnThemeToggle.to-light{background:#ffffff;color:#1c1f26;border-color:#dde1e8}
+  #btnThemeToggle.to-light:hover{border-color:#2f6fed}
+  #btnThemeToggle.to-dark{background:#171a21;color:#e7e9ee;border-color:#2a2f3a}
+  #btnThemeToggle.to-dark:hover{border-color:#4f8cff}
+
+  /* dashboard: full screen, not a popup */
+  .dashboard-screen{position:fixed;inset:0;background:var(--bg);z-index:70;display:flex;flex-direction:column;overflow-y:auto}
+  .dashboard-content{max-width:900px;margin:0 auto;padding:20px;width:100%}
+  .dash-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .dash-controls button{min-height:32px;padding:5px 12px;font-size:12px;border-radius:7px;
+    background:transparent;border-color:var(--border);color:var(--muted)}
+  .dash-controls button:hover{border-color:var(--accent);color:var(--accent)}
+  .dash-controls button.active{background:var(--accent);border-color:var(--accent-2);color:#fff}
+  .dash-section{margin-bottom:20px}
+  .dash-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+  .breakdown-clear{cursor:pointer;color:var(--muted);padding:0 4px;border-radius:4px}
+  .breakdown-clear:hover{color:var(--danger);background:var(--panel-2)}
+  .chart-wrap{position:relative}
+  .chart-bar-hit{fill:transparent;cursor:pointer}
+  .chart-bar-hit:focus{outline:2px solid var(--accent);outline-offset:-2px}
+  .chart-tooltip{position:absolute;transform:translate(-50%,-100%);background:var(--text);color:var(--bg);
+    font-size:11px;padding:4px 8px;border-radius:6px;white-space:nowrap;pointer-events:none;display:none;
+    margin-top:-8px;z-index:5;font-weight:600}
+  .dash-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px}
+  .dash-table th, .dash-table td{padding:6px 8px;border-bottom:1px solid var(--border);text-align:left}
+  .dash-table td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .dash-table th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+
+  .breakdown-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px}
+  .breakdown-row .breakdown-name{flex:0 0 130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+  .breakdown-row .breakdown-bar-wrap{flex:1;background:var(--panel-2);border-radius:4px;overflow:hidden;height:14px}
+  .breakdown-row .breakdown-bar{background:var(--accent);height:100%}
+  .breakdown-row .breakdown-value{flex:0 0 70px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+
+  .day-group{margin-bottom:26px}
+  .day-header{display:flex;justify-content:space-between;align-items:baseline;padding:6px 2px;
+    border-bottom:1px solid var(--border);margin-bottom:14px;gap:10px;flex-wrap:wrap}
+  .day-header .label-group{display:flex;align-items:center;gap:4px}
+  .day-header .label{font-size:15px;font-weight:600;text-transform:capitalize}
+  .day-header .total{font-size:13px;color:var(--muted)}
+  .day-nav-btn{min-height:26px;min-width:26px;padding:0;font-size:14px;line-height:1;border-radius:7px;
+    background:transparent;border-color:transparent;color:var(--muted)}
+  .day-nav-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--panel-2)}
+
+  .activities-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+
+  .activity-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;
+    display:flex;flex-direction:column;gap:6px;transition:box-shadow .3s, border-color .3s, opacity .15s}
+  .activity-card.running{border-color:var(--accent)}
+  .activity-card.just-created{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,124,255,.25)}
+  .activity-card.dragging{opacity:.4}
+  .activity-card.drag-over{outline:2px dashed var(--accent);outline-offset:2px}
+  .activity-card.completed{opacity:.6}
+  .card-header-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin:-6px 0 -2px}
+  .drag-handle{display:inline-flex;align-items:center;justify-content:center;width:32px;height:16px;
+    color:var(--muted);cursor:grab;border-radius:6px;touch-action:none;justify-self:center}
+  .drag-handle:hover{color:var(--accent);background:var(--panel-2)}
+  .drag-handle:active{cursor:grabbing}
+  .complete-check{justify-self:start;display:flex;align-items:center;cursor:pointer}
+  .complete-check input[type=checkbox]{
+    appearance:none;-webkit-appearance:none;width:20px;height:20px;min-height:0;margin:0;cursor:pointer;
+    border-radius:50%;border:2px solid var(--border);background:var(--panel-2);position:relative;
+    transition:background .15s,border-color .15s}
+  .complete-check input[type=checkbox]:hover{border-color:var(--accent)}
+  .complete-check input[type=checkbox]:checked{background:var(--ok);border-color:var(--ok)}
+  .complete-check input[type=checkbox]:checked::after{
+    content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:12px;line-height:1}
+  .complete-check input[type=checkbox]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .card-delete-btn{justify-self:end;display:inline-flex;align-items:center;justify-content:center;
+    width:24px;height:24px;min-height:0;padding:0;font-size:16px;font-weight:700;border-radius:6px;
+    background:transparent;border-color:transparent;color:var(--danger)}
+  .card-delete-btn:hover{color:#fff;background:var(--danger);border-color:var(--danger-2)}
+  .act-name{font-size:15px;font-weight:600}
+  .act-desc{font-size:13px;color:var(--text);min-height:44px;transition:min-height .25s ease}
+  .activity-card.expanded{box-shadow:0 6px 20px rgba(0,0,0,.14)}
+  .activity-card.expanded .act-desc{min-height:160px}
+  .meta-line{font-size:11px;color:var(--muted)}
+  .chain-prior-line{font-size:11px;color:var(--accent);font-weight:600}
+  .chain-prior-link{cursor:pointer}
+  .chain-prior-link:hover{text-decoration:underline}
+  .timer-row{display:flex;align-items:center;gap:8px;margin-top:4px}
+  .timer{font-variant-numeric:tabular-nums;font-size:24px;font-weight:700;letter-spacing:1px;text-align:center;flex:1;min-width:0}
+  .timer{cursor:pointer}
+  .timer.editable:hover, .timer.editable:focus{color:var(--accent);outline:none}
+  .timer.copied-flash{color:var(--ok) !important}
+  .timer-edit-input{width:100%;text-align:center;font-size:20px;font-variant-numeric:tabular-nums;padding:8px;
+    min-height:42px;margin-top:4px}
+  .activity-card.running .timer{color:var(--accent)}
+  .timer-row .btn-toggle{flex:0 0 auto;min-height:38px;padding:8px 14px;font-size:13px}
+  .act-buttons{display:flex;gap:8px;flex-wrap:wrap}
+  .act-buttons button{flex:1;min-width:70px}
+  .empty{color:var(--muted);font-size:14px;text-align:center;padding:30px 0}
+  .act-date{cursor:pointer;border-bottom:1px dashed transparent}
+  .act-date:hover{border-bottom-color:var(--accent);color:var(--accent)}
+  .date-edit-row{display:flex;gap:6px;align-items:center;margin-top:2px;flex-wrap:wrap}
+  .date-edit-row input[type=date]{min-height:32px;padding:4px 6px;font-size:12px;width:auto;flex:1 1 140px}
+  .date-edit-row button{min-height:28px;padding:2px 8px;font-size:11px}
+
+  .load-more-wrap{text-align:center;padding:10px 0 30px}
+
+  .print-report{display:none}
+  @media print{
+    body *{visibility:hidden}
+    .print-report, .print-report *{visibility:visible}
+    .print-report{display:block;position:absolute;top:0;left:0;width:100%;padding:10px;color:#000;background:#fff}
+    .print-report table{width:100%;border-collapse:collapse;font-size:12px}
+    .print-report th, .print-report td{border:1px solid #999;padding:4px 6px;text-align:left}
+    .print-report h1{font-size:16px;margin:0 0 4px}
+    .print-report .print-sub{font-size:12px;color:#444;margin-bottom:14px}
+  }
+
+  /* new-activity modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(10,12,16,.5);display:flex;align-items:center;
+    justify-content:center;z-index:80;padding:16px}
+  .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;
+    max-width:360px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+  .modal-box h2{margin:0 0 14px;font-size:15px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+  .modal-actions{display:flex;gap:10px;margin-top:16px}
+  .modal-actions button{flex:1}
+
+  /* subtle bottom corners: arquivo (left) + horas totais (right) */
+  .corner-left{position:fixed;left:16px;bottom:16px;z-index:75;display:flex;flex-direction:column;
+    align-items:flex-start;gap:4px;max-width:calc(100vw - 32px)}
+  .corner-left-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .corner-left .linklike{display:inline-block;background:var(--panel);border:1px solid var(--border);
+    border-radius:10px;padding:8px 12px;font-size:12px;color:var(--muted);box-shadow:0 4px 18px rgba(0,0,0,.14);cursor:pointer}
+  .corner-left .linklike:hover{color:var(--accent);border-color:var(--accent)}
+  .save-all-btn{display:inline-block;background:var(--panel);border:1px solid var(--border);
+    border-radius:10px;padding:8px 12px;font-size:14px;line-height:1;color:var(--muted);
+    box-shadow:0 4px 18px rgba(0,0,0,.14);cursor:pointer;min-height:0}
+  .save-all-btn:hover{color:var(--accent);border-color:var(--accent)}
+  .save-all-btn.saved{color:var(--ok);border-color:var(--ok)}
+  .save-all-btn.save-error{color:var(--danger);border-color:var(--danger)}
+  .file-popover{position:absolute;left:0;bottom:100%;margin-bottom:8px;background:var(--panel);
+    border:1px solid var(--border);border-radius:10px;padding:8px;display:none;flex-direction:column;gap:6px;
+    min-width:190px;box-shadow:0 4px 16px rgba(0,0,0,.2);text-align:left}
+  .file-popover button{font-size:12px;min-height:36px;padding:6px 10px;width:100%}
+
+  .corner-right{position:fixed;right:16px;bottom:16px;background:var(--panel);border:1px solid var(--border);
+    border-radius:12px;padding:10px 14px;box-shadow:0 4px 18px rgba(0,0,0,.18);z-index:75;
+    min-width:140px;display:flex;align-items:center;gap:10px}
+  .corner-time-wrap{text-align:right}
+  .corner-time{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent);line-height:1.2}
+  .corner-sub{font-size:11px;color:var(--muted);margin-top:2px}
+  .corner-playpause-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;
+    min-height:0;padding:0;font-size:14px;border-radius:50%;background:var(--panel-2);border:1px solid var(--border);
+    color:var(--muted);flex-shrink:0}
+  .corner-playpause-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .corner-playpause-btn.is-running{background:var(--accent);border-color:var(--accent-2);color:#fff}
+  .corner-playpause-btn:disabled{opacity:.4;cursor:default}
+  .corner-playpause-btn:disabled:hover{border-color:var(--border);color:var(--muted)}
+
+  @media (max-width: 480px){
+    main{padding:12px 14px}
+    .top-bar{padding:6px 14px 12px}
+    button{font-size:14px;padding:10px 14px}
+    .corner-right{right:10px;bottom:10px;min-width:120px;padding:8px 10px}
+    .corner-top-right{top:10px;right:10px}
+    .corner-left{left:10px;bottom:10px;max-width:calc(100vw - 20px)}
+    .corner-time{font-size:17px}
+    .search-wrap{max-width:100%;flex-basis:100%}
+    .activities-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+    .activity-card.expanded .act-desc{min-height:110px}
+  }
+</style>
+</head>
+<body>
+
+<div class="sync-warning" id="syncWarning">
+  <span>O arquivo vinculado foi alterado por fora do CLOCK (outra aba, outro computador ou outro programa).</span>
+  <button id="btnSyncReload">Recarregar do arquivo</button>
+  <button id="btnSyncDismiss">Ignorar</button>
+</div>
+
+<div class="corner-top-right">
+  <button class="cal-toggle" id="btnThemeToggle" title="Alternar tema">🖥️ Tema</button>
+</div>
+
+<div class="brand">CLOCK</div>
+<div class="brand-icon brand-icon-btn" id="brandIconBtn" role="button" tabindex="0" title="Atualizar a página">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9.5"/>
+    <line x1="12" y1="2.7" x2="12" y2="4"/>
+    <line x1="12" y1="20" x2="12" y2="21.3"/>
+    <line x1="2.7" y1="12" x2="4" y2="12"/>
+    <line x1="20" y1="12" x2="21.3" y2="12"/>
+    <path d="M12 7.5v4.8l3.3 1.9"/>
+  </svg>
+</div>
+
+<div class="top-bar">
+  <div class="left-controls" id="mainLeftControls">
+    <div class="cal-wrap" id="calWrap">
+      <button class="cal-toggle" id="calToggleBtn">📅 Calendário</button>
+      <div class="cal-popover" id="calPopover">
+        <div class="cal-header">
+          <button id="calPrev">‹</button>
+          <span class="cal-month-label" id="calMonthLabel"></span>
+          <button id="calNext">›</button>
+          <button id="calToday">Hoje</button>
+          <button id="calToggleAll">Ver todos os dias</button>
+        </div>
+        <div class="cal-weekdays"><span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span></div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+    </div>
+    <button class="cal-toggle" id="btnDashboard">📊 Dashboard</button>
+  </div>
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="🔎 Buscar atividade...">
+    <button class="search-clear-btn" id="btnSearchClear" style="display:none" title="Limpar busca" aria-label="Limpar busca">✕</button>
+  </div>
+  <button class="primary" id="btnNewActivity">+ Nova atividade</button>
+</div>
+<hr class="divider">
+
+<main>
+  <div id="daysContainer"></div>
+</main>
+
+<div class="modal-overlay" id="newActivityModal" style="display:none">
+  <div class="modal-box">
+    <h2 id="modalTitle">Nova atividade</h2>
+    <label for="actName">Identificação (até 50 caracteres)</label>
+    <input type="text" id="actName" maxlength="50" placeholder="Ex: Ajuste no relatório X">
+    <div class="counter" id="actNameCounter">0 / 50</div>
+
+    <div id="backfillFields" style="display:none">
+      <div class="meta-line" style="margin:2px 0 8px">Registrando atividade para o dia selecionado no calendário.</div>
+      <label for="actDescModal">Descrição (até 500 caracteres)</label>
+      <textarea id="actDescModal" maxlength="500" placeholder="Descreva o que foi feito..."></textarea>
+      <div class="counter" id="actDescModalCounter">0 / 500</div>
+      <label for="actTimeModal">Tempo trabalhado (HH:MM:SS)</label>
+      <input type="text" id="actTimeModal" placeholder="00:00:00">
+      <div class="meta-line" style="margin:10px 0 2px">Ou, se preferir, informe o horário real de início e fim (tem prioridade sobre o tempo acima):</div>
+      <div class="date-edit-row">
+        <div style="flex:1 1 100px">
+          <label for="actStartModal" style="margin:4px 0 2px">Início</label>
+          <input type="time" id="actStartModal">
+        </div>
+        <div style="flex:1 1 100px">
+          <label for="actEndModal" style="margin:4px 0 2px">Fim</label>
+          <input type="time" id="actEndModal">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button id="btnCancelActivity">Cancelar</button>
+      <button class="primary" id="btnAddActivity">Criar atividade</button>
+    </div>
+  </div>
+</div>
+
+<div class="dashboard-screen" id="dashboardModal" style="display:none">
+  <div class="brand">CLOCK</div>
+  <div class="brand-icon brand-icon-btn" id="brandIconBtnDash" role="button" tabindex="0" title="Atualizar a página">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9.5"/>
+      <line x1="12" y1="2.7" x2="12" y2="4"/>
+      <line x1="12" y1="20" x2="12" y2="21.3"/>
+      <line x1="2.7" y1="12" x2="4" y2="12"/>
+      <line x1="20" y1="12" x2="21.3" y2="12"/>
+      <path d="M12 7.5v4.8l3.3 1.9"/>
+    </svg>
+  </div>
+  <div class="top-bar">
+    <div class="left-controls" id="dashLeftControls">
+      <button class="cal-toggle" id="btnBackToActivities">📋 Atividades</button>
+    </div>
+    <button class="primary" id="btnNewActivityDash">+ Nova atividade</button>
+  </div>
+  <hr class="divider">
+  <div class="dashboard-content">
+    <div class="dash-controls">
+      <button data-range="7">7 dias</button>
+      <button data-range="14">14 dias</button>
+      <button data-range="30">30 dias</button>
+      <button id="btnDashTableToggle">Ver como tabela</button>
+      <button id="btnExportCsv">⬇ Exportar CSV</button>
+      <button id="btnPrintReport">🖨 Imprimir</button>
+    </div>
+    <div id="dashCharts">
+      <div class="dash-section">
+        <div class="dash-title">Atividades por dia <span style="text-transform:none;letter-spacing:0;font-weight:400">— hoje em destaque</span></div>
+        <div class="chart-wrap" id="chartCountWrap">
+          <div id="chartCount"></div>
+          <div class="chart-tooltip" id="chartCountTooltip"></div>
+        </div>
+      </div>
+      <div class="dash-section">
+        <div class="dash-title">Horas por dia <span style="text-transform:none;letter-spacing:0;font-weight:400">— hoje em destaque</span></div>
+        <div class="chart-wrap" id="chartHoursWrap">
+          <div id="chartHours"></div>
+          <div class="chart-tooltip" id="chartHoursTooltip"></div>
+        </div>
+      </div>
+      <div class="dash-section">
+        <div class="dash-title" id="breakdownTitle">Horas por atividade no período</div>
+        <div id="chartBreakdown"></div>
+      </div>
+    </div>
+    <div id="dashTableWrap" style="display:none"></div>
+  </div>
+</div>
+
+<div class="print-report" id="printReport"></div>
+
+<div class="corner-left" id="fileCorner">
+  <div class="corner-left-row">
+    <a class="linklike" id="fileLinkToggle">📁 Vincular arquivo</a>
+    <button class="save-all-btn" id="btnSaveAll" title="Salvar tudo no arquivo" aria-label="Salvar tudo no arquivo">💾</button>
+  </div>
+  <div class="file-popover" id="filePopover"></div>
+</div>
+
+<div class="corner-right" id="hoursCorner">
+  <button class="corner-playpause-btn" id="btnFooterPlayPause" aria-label="Pausar ou retomar atividade">⏯</button>
+  <div class="corner-time-wrap">
+    <div class="corner-time" id="footerTime">00:00:00</div>
+    <div class="corner-sub" id="footerActivities">0 atividades hoje</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const DB_NAME = 'clock-db';
+  const DB_VERSION = 2;
+  const STORE_NAME = 'handles';
+  const DATA_STORE_NAME = 'appdata';
+  const DATA_KEY = 'main';
+  const HANDLE_KEY = 'fileHandle';
+  const BACKUP_HANDLE_KEY = 'backupFileHandle';
+  const DRAFT_KEY = 'clock-data-draft'; // legacy localStorage key, read once for migration only
+  const THEME_KEY = 'clock-theme';
+
+  let appData = { activities: [], lastCarryOverDate: null };
+  let fileHandle = null;
+  let backupHandle = null;
+  let tickTimer = null;
+  let editingTimerId = null;
+  let editingDateId = null;
+  let dragSourceId = null;
+  let searchQuery = '';
+  let allDaysVisibleCount = 30;
+  let lastSavedAt = null;
+  let lastKnownFileModified = null;
+
+  let selectedDate = new Date();
+  let calendarViewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+  let showAllDays = false;
+
+  // ---------- utils ----------
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+  function nowIso(){ return new Date().toISOString(); }
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function formatDuration(ms){
+    if(ms < 0) ms = 0;
+    const totalSec = Math.floor(ms/1000);
+    const h = Math.floor(totalSec/3600);
+    const m = Math.floor((totalSec%3600)/60);
+    const s = totalSec%60;
+    return pad(h)+':'+pad(m)+':'+pad(s);
+  }
+  function parseDurationInput(str){
+    if(!str) return null;
+    const parts = str.trim().split(':');
+    if(parts.length < 1 || parts.length > 3) return null;
+    if(parts.some(p => p.trim() === '' || isNaN(Number(p)))) return null;
+    let h=0, m=0, s=0;
+    const nums = parts.map(Number);
+    if(nums.length === 3){ [h,m,s] = nums; }
+    else if(nums.length === 2){ [m,s] = nums; }
+    else { m = nums[0]; }
+    if(h<0 || m<0 || s<0 || m>=60 || s>=60) return null;
+    return (h*3600 + m*60 + s) * 1000;
+  }
+  function dayKey(input){
+    const d = (input instanceof Date) ? input : new Date(input);
+    return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  }
+  function formatDayLabel(key){
+    const [y,m,d] = key.split('-').map(Number);
+    const date = new Date(y, m-1, d);
+    let label = date.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'2-digit', year:'numeric' });
+    if(key === dayKey(new Date())) label += ' (hoje)';
+    return label;
+  }
+  function activityMatchesSearch(a, query){
+    if((a.name||'').toLowerCase().includes(query)) return true;
+    if((a.description||'').toLowerCase().includes(query)) return true;
+    const dk = dayKey(a.createdAt);
+    if(dk.toLowerCase().includes(query)) return true;
+    if(formatDayLabel(dk).toLowerCase().includes(query)) return true;
+    const shortDate = new Date(a.createdAt).toLocaleDateString('pt-BR');
+    if(shortDate.toLowerCase().includes(query)) return true;
+    return false;
+  }
+  function escapeHtml(str){
+    return (str||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- indexedDB: file handles + the app data itself (source of truth) ----------
+  function idbOpen(){
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if(!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
+        if(!db.objectStoreNames.contains(DATA_STORE_NAME)) db.createObjectStore(DATA_STORE_NAME);
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function idbGetHandle(key){
+    try{
+      const db = await idbOpen();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const req = tx.objectStore(STORE_NAME).get(key);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      });
+    }catch(e){ return null; }
+  }
+  async function idbSetHandle(key, handle){
+    try{
+      const db = await idbOpen();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).put(handle, key);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+      });
+    }catch(e){ return false; }
+  }
+  async function idbGetAppData(){
+    try{
+      const db = await idbOpen();
+      return new Promise((resolve) => {
+        const tx = db.transaction(DATA_STORE_NAME, 'readonly');
+        const req = tx.objectStore(DATA_STORE_NAME).get(DATA_KEY);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      });
+    }catch(e){ return null; }
+  }
+  async function idbSetAppData(data){
+    try{
+      const db = await idbOpen();
+      return new Promise((resolve) => {
+        const tx = db.transaction(DATA_STORE_NAME, 'readwrite');
+        tx.objectStore(DATA_STORE_NAME).put(data, DATA_KEY);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+      });
+    }catch(e){ return false; }
+  }
+
+  // ---------- file persistence ----------
+  const supportsFS = typeof window.showSaveFilePicker === 'function' && typeof window.showOpenFilePicker === 'function';
+
+  function normalize(data){
+    if(!data || typeof data !== 'object') data = {};
+    if(!Array.isArray(data.activities)) data.activities = [];
+    data.activities.forEach(a => {
+      if(typeof a.manualAdjustmentMs !== 'number') a.manualAdjustmentMs = 0;
+      if(!Array.isArray(a.sessions)) a.sessions = [];
+      if(typeof a.description !== 'string') a.description = '';
+      if(typeof a.completed !== 'boolean') a.completed = false;
+    });
+    return {
+      activities: data.activities,
+      lastCarryOverDate: typeof data.lastCarryOverDate === 'string' ? data.lastCarryOverDate : null
+    };
+  }
+
+  function dataEquivalent(a, b){
+    try{ return JSON.stringify(normalize(a)) === JSON.stringify(normalize(b)); }catch(e){ return false; }
+  }
+
+  // ---------- subtle file-link control (bottom-left popover) ----------
+  function setFileLinkState(label, popoverHtml){
+    document.getElementById('fileLinkToggle').textContent = '📁 ' + label;
+    document.getElementById('filePopover').innerHTML = popoverHtml;
+    bindFilePopoverEvents();
+  }
+  function backupButtonHtml(){
+    return '<button id="btnLinkBackup">'+(backupHandle ? '📦 Trocar backup ('+escapeHtml(backupHandle.name)+')' : '📦 Vincular arquivo de backup')+'</button>';
+  }
+  function notConnectedPopoverHtml(){
+    return '<button id="btnOpenFile">Abrir arquivo existente</button><button id="btnNewFile">Criar novo arquivo</button>';
+  }
+  function connectedPopoverHtml(){
+    return '<button id="btnOpenFile">Abrir outro arquivo</button><button id="btnNewFile">Criar novo arquivo</button>'
+      + backupButtonHtml();
+  }
+  function reconnectPopoverHtml(){
+    return '<button id="btnReconnect">Reconectar</button><button id="btnOpenFile">Abrir outro arquivo</button><button id="btnNewFile">Criar novo arquivo</button>';
+  }
+  function fallbackPopoverHtml(){
+    return '<button id="btnExport">Exportar JSON</button><button id="btnImport">Importar JSON</button>'
+      + '<input type="file" id="fileImportInput" accept="application/json" style="display:none">';
+  }
+  function closeFilePopover(){
+    document.getElementById('filePopover').style.display = 'none';
+  }
+  function bindFilePopoverEvents(){
+    const openBtn = document.getElementById('btnOpenFile');
+    const newBtn = document.getElementById('btnNewFile');
+    const reconnectBtn = document.getElementById('btnReconnect');
+    const exportBtn = document.getElementById('btnExport');
+    const importBtn = document.getElementById('btnImport');
+    const importInput = document.getElementById('fileImportInput');
+    const linkBackupBtn = document.getElementById('btnLinkBackup');
+    if(openBtn) openBtn.onclick = () => { closeFilePopover(); pickExistingFile(); };
+    if(newBtn) newBtn.onclick = () => { closeFilePopover(); createNewFile(); };
+    if(linkBackupBtn) linkBackupBtn.onclick = () => { closeFilePopover(); linkBackupFile(); };
+    if(reconnectBtn) reconnectBtn.onclick = async () => {
+      closeFilePopover();
+      const handle = await idbGetHandle(HANDLE_KEY);
+      if(!handle) return;
+      await connectHandle(handle, { isNew:false });
+    };
+    if(exportBtn) exportBtn.onclick = () => {
+      const json = JSON.stringify(appData, null, 2);
+      const blob = new Blob([json], { type:'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'clock-data.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      closeFilePopover();
+    };
+    if(importBtn) importBtn.onclick = () => importInput && importInput.click();
+    if(importInput) importInput.onchange = async (ev) => {
+      const file = ev.target.files[0];
+      if(!file) return;
+      const text = await file.text();
+      try{
+        appData = normalize(JSON.parse(text));
+        saveData();
+        render();
+        closeFilePopover();
+      }catch(e){ alert('Arquivo JSON inválido.'); }
+    };
+  }
+
+  document.getElementById('fileLinkToggle').onclick = () => {
+    const pop = document.getElementById('filePopover');
+    pop.style.display = pop.style.display === 'flex' ? 'none' : 'flex';
+  };
+  document.getElementById('btnSaveAll').onclick = saveAllData;
+  document.getElementById('btnFooterPlayPause').onclick = () => {
+    const activity = getLastActiveActivity();
+    if(!activity) return;
+    toggleActivity(activity.id);
+  };
+  document.getElementById('calToggleBtn').onclick = () => {
+    const pop = document.getElementById('calPopover');
+    pop.style.display = pop.style.display === 'block' ? 'none' : 'block';
+  };
+  document.getElementById('calToggleBtn').addEventListener('dblclick', (e) => {
+    e.preventDefault();
+    goToToday();
+  });
+  document.addEventListener('click', (e) => {
+    const fileCorner = document.getElementById('fileCorner');
+    const filePop = document.getElementById('filePopover');
+    if(filePop.style.display === 'flex' && fileCorner && !fileCorner.contains(e.target)) filePop.style.display = 'none';
+
+    const calWrap = document.getElementById('calWrap');
+    const calPop = document.getElementById('calPopover');
+    if(calPop.style.display === 'block' && calWrap && !calWrap.contains(e.target)) calPop.style.display = 'none';
+  });
+
+  async function readFileHandleRaw(handle){
+    const file = await handle.getFile();
+    if(handle === fileHandle) lastKnownFileModified = file.lastModified;
+    const text = await file.text();
+    if(!text || !text.trim()) return { activities:[] };
+    return normalize(JSON.parse(text)); // throws if the text isn't valid JSON
+  }
+
+  // Reads a linked file and, if its content is unreadable/corrupted (e.g. truncated by an
+  // abrupt shutdown mid-write), asks before silently starting empty: offers to recover from
+  // the linked backup, or warns clearly when there's no backup to fall back to. Returns
+  // { data, recovered } — callers that persist appData unconditionally after this can ignore
+  // `recovered`; it only matters where persisting is otherwise conditional.
+  async function readFileHandle(handle, { allowRecovery=true } = {}){
+    try{
+      return { data: await readFileHandleRaw(handle), recovered:false };
+    }catch(e){
+      console.error('JSON inválido no arquivo.', e);
+      if(!allowRecovery) return { data:{ activities:[] }, recovered:false };
+      if(backupHandle){
+        const tryBackup = confirm(
+          'O arquivo "'+handle.name+'" parece corrompido ou ilegível.\n\n'
+          + 'Clique OK para recuperar os dados do backup vinculado ("'+backupHandle.name+'").\n'
+          + 'Clique Cancelar para iniciar vazio (risco de perder os dados do arquivo principal).'
+        );
+        if(tryBackup){
+          try{
+            const backupData = await readFileHandleRaw(backupHandle);
+            alert('Dados recuperados do arquivo de backup. Confira as atividades antes de continuar.');
+            return { data: backupData, recovered:true };
+          }catch(e2){
+            alert('O arquivo de backup também está corrompido ou ilegível. Nenhum dado pôde ser recuperado automaticamente.');
+            return { data:{ activities:[] }, recovered:false };
+          }
+        }
+      } else {
+        alert('O arquivo "'+handle.name+'" parece corrompido ou ilegível, e nenhum backup está vinculado. Iniciando vazio.');
+      }
+      return { data:{ activities:[] }, recovered:false };
+    }
+  }
+
+  async function connectHandle(handle, { isNew=false } = {}){
+    const perm = await handle.requestPermission({ mode:'readwrite' });
+    if(perm !== 'granted'){
+      setFileLinkState('Permissão negada', notConnectedPopoverHtml());
+      return false;
+    }
+    fileHandle = handle;
+    await idbSetHandle(HANDLE_KEY, handle);
+    if(isNew){
+      await saveData();
+    } else {
+      const { data: fileData } = await readFileHandle(handle);
+      if(appData.activities.length > 0 && !dataEquivalent(fileData, appData)){
+        const keepLocal = confirm(
+          'O arquivo "'+handle.name+'" tem conteúdo diferente das informações atuais na tela, que ainda não foram gravadas nele.\n\n'
+          + 'Clique OK para GRAVAR as informações atuais neste arquivo (substituindo o conteúdo dele).\n'
+          + 'Clique Cancelar para DESCARTAR as informações atuais e abrir o conteúdo do arquivo.'
+        );
+        if(keepLocal){
+          await saveData();
+        } else {
+          appData = fileData;
+          await saveData(); // persist the imported content into IndexedDB too, not just the file
+        }
+      } else {
+        appData = fileData;
+        await saveData();
+      }
+    }
+    setFileLinkState(handle.name + ' ✓', connectedPopoverHtml());
+    render();
+    return true;
+  }
+
+  async function pickExistingFile(){
+    try{
+      const [handle] = await window.showOpenFilePicker({
+        types: [{ description:'JSON', accept: {'application/json':['.json']} }]
+      });
+      await connectHandle(handle, { isNew:false });
+    }catch(e){ /* user cancelled */ }
+  }
+
+  async function createNewFile(){
+    try{
+      const handle = await window.showSaveFilePicker({
+        suggestedName: 'clock-data.json',
+        types: [{ description:'JSON', accept: {'application/json':['.json']} }]
+      });
+      await connectHandle(handle, { isNew:true });
+    }catch(e){ /* user cancelled */ }
+  }
+
+  async function linkBackupFile(){
+    try{
+      const handle = await window.showSaveFilePicker({
+        suggestedName: 'clock-data.backup.json',
+        types: [{ description:'JSON', accept: {'application/json':['.json']} }]
+      });
+      const perm = await handle.requestPermission({ mode:'readwrite' });
+      if(perm !== 'granted') return;
+      backupHandle = handle;
+      await idbSetHandle(BACKUP_HANDLE_KEY, handle);
+      if(fileHandle){
+        setFileLinkState(fileHandle.name + ' ✓', connectedPopoverHtml());
+      }
+    }catch(e){ /* user cancelled */ }
+  }
+
+  async function tryAutoReconnectBackup(){
+    try{
+      const handle = await idbGetHandle(BACKUP_HANDLE_KEY);
+      if(!handle) return;
+      const perm = await handle.queryPermission({ mode:'readwrite' });
+      if(perm === 'granted') backupHandle = handle;
+    }catch(e){ /* ignore */ }
+  }
+
+  async function writeBackupSnapshot(){
+    if(!backupHandle || !fileHandle) return;
+    try{
+      const currentFile = await fileHandle.getFile();
+      const currentText = await currentFile.text();
+      const textToWrite = currentText && currentText.trim() ? currentText : '{"activities":[]}';
+      // Never mirror corrupted content into the backup — that would destroy the last
+      // known-good copy right as it's needed most for recovery.
+      if(currentText && currentText.trim()){
+        try{ JSON.parse(currentText); }
+        catch(e){ console.error('Arquivo principal corrompido; backup preservado sem alteração.', e); return; }
+      }
+      const writable = await backupHandle.createWritable();
+      await writable.write(textToWrite);
+      await writable.close();
+    }catch(e){ console.error('Falha ao gravar o backup', e); }
+  }
+
+  function updateLastSavedLabel(){
+    const btn = document.getElementById('btnSaveAll');
+    if(!btn) return;
+    if(!lastSavedAt){ btn.title = 'Salvar tudo no arquivo'; return; }
+    const d = new Date(lastSavedAt);
+    btn.title = 'Salvar tudo no arquivo — salvo às ' + pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  }
+
+  async function checkForExternalChanges(){
+    if(!fileHandle) return;
+    try{
+      const file = await fileHandle.getFile();
+      if(lastKnownFileModified !== null && file.lastModified !== lastKnownFileModified){
+        document.getElementById('syncWarning').style.display = 'flex';
+      }
+    }catch(e){ /* permission may have been revoked; ignore */ }
+  }
+
+  // IndexedDB is the source of truth: it's transactional, so an abrupt shutdown mid-write
+  // either keeps the previous committed value or the new one — never a truncated/corrupted
+  // read, unlike writing straight to a visible file. The linked file (if any) is now only a
+  // write-through mirror for portability/manual backup; the app never depends on reading it
+  // back to open normally — only once, as a one-time import if IndexedDB is still empty.
+  async function tryAutoReconnect(){
+    const stored = await idbGetAppData();
+    if(stored){
+      appData = normalize(stored);
+    } else {
+      loadLegacyDraftFromLocalStorage(); // migration path for installs that pre-date this store
+    }
+
+    const handle = await idbGetHandle(HANDLE_KEY);
+    let seededFromFile = false;
+    if(handle){
+      try{
+        const perm = await handle.queryPermission({ mode:'readwrite' });
+        if(perm === 'granted'){
+          fileHandle = handle;
+          if(!stored){
+            // Nothing in IndexedDB yet: this is either the first run after upgrading, or a
+            // fresh profile reconnecting to a file that already has data. Import it once.
+            const { data } = await readFileHandle(handle);
+            if(appData.activities.length > 0 && !dataEquivalent(data, appData)){
+              const keepLocal = confirm(
+                'O arquivo "'+handle.name+'" vinculado tem conteúdo diferente dos dados locais recém-migrados.\n\n'
+                + 'Clique OK para manter os dados locais (serão gravados no arquivo).\n'
+                + 'Clique Cancelar para usar o conteúdo do arquivo.'
+              );
+              if(!keepLocal) appData = data;
+            } else {
+              appData = data;
+            }
+            seededFromFile = true;
+          }
+          setFileLinkState(handle.name + ' ✓', connectedPopoverHtml());
+        } else {
+          setFileLinkState('Clique para reconectar', reconnectPopoverHtml());
+        }
+      }catch(e){ /* keep whatever was loaded from IndexedDB/legacy draft above */ }
+    }
+
+    const carried = carryOverIncompleteActivities();
+    if(carried || seededFromFile || !stored) await saveData();
+    render();
+  }
+
+  async function saveData(){
+    const idbOk = await idbSetAppData(appData);
+    if(fileHandle){
+      try{
+        await writeBackupSnapshot();
+        const writable = await fileHandle.createWritable();
+        await writable.write(JSON.stringify(appData, null, 2));
+        await writable.close();
+        try{
+          const f = await fileHandle.getFile();
+          lastKnownFileModified = f.lastModified;
+        }catch(e2){ lastKnownFileModified = Date.now(); }
+      }catch(e){
+        // The data is already safe in IndexedDB — the file mirror is best-effort, so a
+        // failure here (e.g. revoked permission) must not be reported as data loss.
+        console.error('Falha ao espelhar no arquivo vinculado', e);
+      }
+    }
+    lastSavedAt = Date.now();
+    updateLastSavedLabel();
+    return idbOk;
+  }
+
+  function loadLegacyDraftFromLocalStorage(){
+    try{
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if(raw) appData = normalize(JSON.parse(raw));
+    }catch(e){}
+  }
+
+  // ---------- activity logic ----------
+  function getRunningActivity(){
+    return appData.activities.find(a => {
+      const last = a.sessions[a.sessions.length-1];
+      return last && last.end === null;
+    });
+  }
+
+  // The activity the spacebar shortcut acts on: the one currently running, or — when
+  // nothing is running — whichever activity was most recently paused (latest session end).
+  function getLastActiveActivity(){
+    const running = getRunningActivity();
+    if(running) return running;
+    let best = null, bestEndMs = -Infinity;
+    for(const a of appData.activities){
+      if(a.completed) continue; // completed activities can't be (re)started
+      const last = a.sessions[a.sessions.length-1];
+      if(!last || !last.end) continue;
+      const endMs = new Date(last.end).getTime();
+      if(endMs > bestEndMs){ bestEndMs = endMs; best = a; }
+    }
+    return best;
+  }
+
+  function getActivityElapsedMs(activity, nowMs){
+    let total = activity.manualAdjustmentMs || 0;
+    for(const s of activity.sessions){
+      const start = new Date(s.start).getTime();
+      const end = s.end ? new Date(s.end).getTime() : nowMs;
+      total += Math.max(0, end - start);
+    }
+    return Math.max(0, total);
+  }
+
+  // Sums the activity's own time on each PRIOR day of its carry-over chain
+  // (walking back via carriedFrom), excluding the current record's own time.
+  // Guards against a broken/cyclic chain (e.g. a middle link was deleted).
+  function getChainPriorMs(activity, nowMs){
+    let total = 0;
+    let current = activity;
+    const seen = new Set([activity.id]);
+    while(current.carriedFrom){
+      const prev = appData.activities.find(a => a.id === current.carriedFrom);
+      if(!prev || seen.has(prev.id)) break;
+      seen.add(prev.id);
+      total += getActivityElapsedMs(prev, nowMs);
+      current = prev;
+    }
+    return total;
+  }
+
+  // Splits a session's time across the calendar day(s) it actually spans, so a
+  // session that runs past midnight is credited to each day proportionally
+  // instead of being counted entirely under the activity's creation day.
+  function getActivityMsForDay(activity, dayKeyStr, nowMs){
+    const [y,m,d] = dayKeyStr.split('-').map(Number);
+    const dayStart = new Date(y, m-1, d, 0, 0, 0, 0).getTime();
+    const dayEnd = new Date(y, m-1, d+1, 0, 0, 0, 0).getTime();
+    let total = 0;
+    for(const s of activity.sessions){
+      const start = new Date(s.start).getTime();
+      const end = s.end ? new Date(s.end).getTime() : nowMs;
+      const clampedStart = Math.max(start, dayStart);
+      const clampedEnd = Math.min(end, dayEnd);
+      total += Math.max(0, clampedEnd - clampedStart);
+    }
+    if(dayKey(activity.createdAt) === dayKeyStr) total += (activity.manualAdjustmentMs || 0);
+    return Math.max(0, total);
+  }
+
+  function getDayTotalMs(dayKeyStr, nowMs){
+    const [y,m,d] = dayKeyStr.split('-').map(Number);
+    const prevKey = dayKey(new Date(y, m-1, d-1));
+    let total = 0;
+    for(const a of appData.activities){
+      const ck = dayKey(a.createdAt);
+      if(ck === dayKeyStr || ck === prevKey){
+        total += getActivityMsForDay(a, dayKeyStr, nowMs);
+      }
+    }
+    return total;
+  }
+
+  function isRunning(activity){
+    const last = activity.sessions[activity.sessions.length-1];
+    return !!(last && last.end === null);
+  }
+
+  function toggleActivity(id){
+    const nowMs = Date.now();
+    const activity = appData.activities.find(a => a.id === id);
+    if(!activity) return;
+    if(isRunning(activity)){
+      activity.sessions[activity.sessions.length-1].end = new Date(nowMs).toISOString();
+    } else {
+      if(activity.completed) return; // can't start the timer on a completed activity
+      const running = getRunningActivity();
+      if(running){
+        running.sessions[running.sessions.length-1].end = new Date(nowMs).toISOString();
+      }
+      activity.sessions.push({ start: new Date(nowMs).toISOString(), end: null });
+      moveActivityToFrontOfDay(activity);
+    }
+    saveData();
+    render();
+  }
+
+  function deleteActivity(id){
+    const activity = appData.activities.find(a => a.id === id);
+    if(!activity) return;
+    if(!confirm('Excluir a atividade "'+activity.name+'"? Esta ação não pode ser desfeita.')) return;
+    appData.activities = appData.activities.filter(a => a.id !== id);
+    saveData();
+    render();
+  }
+
+  function updateActivityField(id, field, value){
+    const activity = appData.activities.find(a => a.id === id);
+    if(!activity) return;
+    activity[field] = value;
+    saveData();
+  }
+
+  async function saveAllData(){
+    document.querySelectorAll('.activity-card').forEach(card => {
+      const id = card.getAttribute('data-id');
+      const activity = appData.activities.find(a => a.id === id);
+      if(!activity) return;
+      const nameInp = card.querySelector('.act-name');
+      const descTa = card.querySelector('.act-desc');
+      if(nameInp){
+        const trimmed = nameInp.value.trim().slice(0,50);
+        if(trimmed){ activity.name = trimmed; nameInp.value = trimmed; }
+      }
+      if(descTa){
+        activity.description = descTa.value.slice(0,500);
+      }
+    });
+
+    const btn = document.getElementById('btnSaveAll');
+    const ok = await saveData();
+    if(btn){
+      btn.classList.remove('saved','save-error');
+      btn.classList.add(ok ? 'saved' : 'save-error');
+      const original = btn.textContent;
+      btn.textContent = ok ? '✅' : '⚠️';
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.classList.remove('saved','save-error');
+        btn.disabled = false;
+      }, 1200);
+    }
+  }
+
+  function isBackfillMode(){
+    return !showAllDays && dayKey(selectedDate) !== dayKey(new Date());
+  }
+
+  // On the first app-open of a new day, every not-yet-completed activity that isn't
+  // already superseded by a later carried-over copy gets replicated as a fresh entry
+  // for today, so unfinished work keeps showing up until it's checked off.
+  function carryOverIncompleteActivities(){
+    const todayKey = dayKey(new Date());
+    if(appData.lastCarryOverDate === todayKey) return false;
+
+    const candidates = appData.activities.filter(a =>
+      !a.completed && !a.carriedForwardTo && dayKey(a.createdAt) < todayKey
+    );
+
+    candidates.forEach(a => {
+      const newId = uid();
+      appData.activities.unshift({
+        id: newId,
+        name: a.name,
+        description: a.description,
+        createdAt: nowIso(),
+        sessions: [],
+        manualAdjustmentMs: 0,
+        completed: false,
+        carriedFrom: a.id
+      });
+      a.carriedForwardTo = newId;
+    });
+
+    appData.lastCarryOverDate = todayKey;
+    return candidates.length > 0;
+  }
+
+  function addActivity(){
+    const nameInput = document.getElementById('actName');
+    const name = nameInput.value.trim();
+    if(!name){ nameInput.focus(); return; }
+    const newId = uid();
+
+    if(isBackfillMode()){
+      const descInput = document.getElementById('actDescModal');
+      const timeInput = document.getElementById('actTimeModal');
+      const startInput = document.getElementById('actStartModal');
+      const endInput = document.getElementById('actEndModal');
+      const desc = descInput.value.trim().slice(0,500);
+      const d = selectedDate;
+      let sessions = [];
+      let ms = 0;
+      if(startInput.value && endInput.value){
+        const [sh,sm] = startInput.value.split(':').map(Number);
+        const [eh,em] = endInput.value.split(':').map(Number);
+        const startDt = new Date(d.getFullYear(), d.getMonth(), d.getDate(), sh, sm, 0);
+        let endDt = new Date(d.getFullYear(), d.getMonth(), d.getDate(), eh, em, 0);
+        if(endDt.getTime() <= startDt.getTime()) endDt = new Date(endDt.getTime() + 24*3600000);
+        sessions = [{ start: startDt.toISOString(), end: endDt.toISOString() }];
+      } else {
+        ms = parseDurationInput(timeInput.value || '00:00:00');
+        if(ms === null){ timeInput.focus(); timeInput.select(); return; }
+      }
+      const createdAt = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0).toISOString();
+      appData.activities.unshift({
+        id: newId,
+        name: name.slice(0,50),
+        description: desc,
+        createdAt,
+        sessions,
+        manualAdjustmentMs: ms
+      });
+      // keep viewing the same past day so the new entry stays visible
+    } else {
+      appData.activities.unshift({
+        id: newId,
+        name: name.slice(0,50),
+        description: '',
+        createdAt: nowIso(),
+        sessions: [],
+        manualAdjustmentMs: 0
+      });
+      selectedDate = new Date();
+      calendarViewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+      showAllDays = false;
+    }
+
+    closeNewActivityModal();
+    saveData();
+    render();
+    focusNewActivity(newId);
+  }
+
+  function focusNewActivity(id){
+    requestAnimationFrame(() => {
+      const card = document.querySelector('.activity-card[data-id="'+id+'"]');
+      if(!card) return;
+      card.scrollIntoView({ behavior:'smooth', block:'center' });
+      card.classList.add('just-created');
+      setTimeout(() => card.classList.remove('just-created'), 1600);
+      const btn = card.querySelector('[data-toggle]');
+      if(btn) btn.focus();
+    });
+  }
+
+  function goToActivity(id){
+    const activity = appData.activities.find(a => a.id === id);
+    if(!activity) return;
+    const [y,m,d] = dayKey(activity.createdAt).split('-').map(Number);
+    selectedDate = new Date(y, m-1, d);
+    calendarViewMonth = new Date(y, m-1, 1);
+    showAllDays = false;
+    editingTimerId = null;
+    editingDateId = null;
+    if(searchQuery){
+      searchQuery = '';
+      const searchInput = document.getElementById('searchInput');
+      if(searchInput) searchInput.value = '';
+      const clearBtn = document.getElementById('btnSearchClear');
+      if(clearBtn) clearBtn.style.display = 'none';
+    }
+    render();
+    requestAnimationFrame(() => {
+      const card = document.querySelector('.activity-card[data-id="'+id+'"]');
+      if(!card) return;
+      card.scrollIntoView({ behavior:'smooth', block:'center' });
+      card.classList.add('just-created');
+      setTimeout(() => card.classList.remove('just-created'), 1600);
+    });
+  }
+
+  // ---------- new-activity modal ----------
+  function updateDescModalCounter(){
+    const descInput = document.getElementById('actDescModal');
+    const counter = document.getElementById('actDescModalCounter');
+    if(descInput && counter) counter.textContent = descInput.value.length + ' / 500';
+  }
+
+  function openNewActivityModal(){
+    document.getElementById('newActivityModal').style.display = 'flex';
+    const input = document.getElementById('actName');
+    input.value = '';
+    updateCounters();
+
+    const backfillWrap = document.getElementById('backfillFields');
+    const title = document.getElementById('modalTitle');
+    if(isBackfillMode()){
+      backfillWrap.style.display = 'block';
+      title.textContent = 'Nova atividade — ' + formatDayLabel(dayKey(selectedDate));
+      document.getElementById('actDescModal').value = '';
+      document.getElementById('actTimeModal').value = '00:00:00';
+      document.getElementById('actStartModal').value = '';
+      document.getElementById('actEndModal').value = '';
+      updateDescModalCounter();
+    } else {
+      backfillWrap.style.display = 'none';
+      title.textContent = 'Nova atividade';
+    }
+
+    requestAnimationFrame(() => input.focus());
+  }
+  function closeNewActivityModal(){
+    document.getElementById('newActivityModal').style.display = 'none';
+  }
+
+  // ---------- rendering ----------
+  function groupByDay(list){
+    const source = list || appData.activities;
+    const groups = {};
+    for(const a of source){
+      const key = dayKey(a.createdAt);
+      if(!groups[key]) groups[key] = [];
+      groups[key].push(a);
+    }
+    return Object.keys(groups).sort((a,b) => b.localeCompare(a)).map(key => ({ key, items: groups[key] }));
+  }
+
+  function renderCalendar(){
+    const year = calendarViewMonth.getFullYear();
+    const month = calendarViewMonth.getMonth();
+    const first = new Date(year, month, 1);
+    const startWeekday = first.getDay();
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    let monthLabel = calendarViewMonth.toLocaleDateString('pt-BR', { month:'long', year:'numeric' });
+    monthLabel = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+    document.getElementById('calMonthLabel').textContent = monthLabel;
+
+    const daysWithData = new Set(appData.activities.map(a => dayKey(a.createdAt)));
+    const todayKey = dayKey(new Date());
+    const selectedKey = dayKey(selectedDate);
+
+    let html = '';
+    for(let i=0;i<startWeekday;i++) html += '<div class="cal-cell empty"></div>';
+    for(let d=1; d<=daysInMonth; d++){
+      const key = dayKey(new Date(year, month, d));
+      const classes = ['cal-cell'];
+      if(daysWithData.has(key)) classes.push('has-data');
+      if(key === todayKey) classes.push('today');
+      if(key === selectedKey && !showAllDays) classes.push('selected');
+      html += '<div class="'+classes.join(' ')+'" data-date-key="'+key+'">'+d+'</div>';
+    }
+    document.getElementById('calGrid').innerHTML = html;
+    document.querySelectorAll('.cal-cell[data-date-key]').forEach(cell => {
+      cell.onclick = () => {
+        const key = cell.getAttribute('data-date-key');
+        const [y,m,dd] = key.split('-').map(Number);
+        selectedDate = new Date(y, m-1, dd);
+        showAllDays = false;
+        editingTimerId = null;
+        document.getElementById('calPopover').style.display = 'none';
+        render();
+      };
+    });
+
+    document.getElementById('calToggleAll').textContent = showAllDays ? 'Ver por dia' : 'Ver todos os dias';
+  }
+
+  function render(){
+    const nowMs = Date.now();
+    renderCalendar();
+
+    const container = document.getElementById('daysContainer');
+    const isSearching = !!searchQuery;
+    const groups = isSearching
+      ? groupByDay(appData.activities.filter(a => activityMatchesSearch(a, searchQuery)))
+      : groupByDay();
+
+    let groupsToShow;
+    let moreGroupsCount = 0;
+    if(isSearching){
+      groupsToShow = groups;
+    } else if(showAllDays){
+      groupsToShow = groups.slice(0, allDaysVisibleCount);
+      moreGroupsCount = Math.max(0, groups.length - allDaysVisibleCount);
+    } else {
+      const key = dayKey(selectedDate);
+      const found = groups.find(g => g.key === key);
+      groupsToShow = [found || { key, items: [] }];
+    }
+
+    if(isSearching && groups.length === 0){
+      container.innerHTML = '<div class="empty">Nenhuma atividade encontrada para "'+escapeHtml(searchQuery)+'".</div>';
+    } else if(!isSearching && groups.length === 0 && !showAllDays){
+      container.innerHTML = '<div class="empty">Nenhuma atividade criada ainda. Use o botão "+ Nova atividade" para começar.</div>';
+    } else {
+      container.innerHTML = groupsToShow.map(g => {
+        const dayTotalMs = isSearching
+          ? g.items.reduce((sum,a) => sum + getActivityElapsedMs(a, nowMs), 0)
+          : getDayTotalMs(g.key, nowMs);
+        const cardsHtml = g.items.length
+          ? '<div class="activities-grid">' + g.items.map(a => activityCardHtml(a, nowMs)).join('') + '</div>'
+          : '<div class="empty">Nenhuma atividade registrada neste dia.</div>';
+        const navHtml = (showAllDays || isSearching) ? '' :
+          '<button class="day-nav-btn" data-day-nav-prev title="Dia anterior" aria-label="Dia anterior">‹</button>'
+          + '<button class="day-nav-btn" data-day-nav-next title="Próximo dia" aria-label="Próximo dia">›</button>';
+        return '<div class="day-group" data-day="'+g.key+'">'
+          + '<div class="day-header"><span class="label-group">'+navHtml+'<span class="label">'+formatDayLabel(g.key)+'</span></span>'
+          + '<span class="total" data-day-total="'+g.key+'">Total do dia: '+formatDuration(dayTotalMs)+'</span>'
+          + '</div>'
+          + cardsHtml
+          + '</div>';
+      }).join('')
+        + (moreGroupsCount > 0 ? '<div class="load-more-wrap"><button id="btnLoadMoreDays">Carregar mais '+Math.min(moreGroupsCount,30)+' dias</button></div>' : '');
+    }
+
+    bindActivityEvents();
+    bindDayNavEvents();
+    const loadMoreBtn = document.getElementById('btnLoadMoreDays');
+    if(loadMoreBtn) loadMoreBtn.onclick = () => { allDaysVisibleCount += 30; render(); };
+    updateFooter(nowMs);
+  }
+
+  function shiftSelectedDay(delta){
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() + delta);
+    selectedDate = d;
+    calendarViewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+    editingTimerId = null;
+    render();
+  }
+
+  function bindDayNavEvents(){
+    const prevBtn = document.querySelector('[data-day-nav-prev]');
+    const nextBtn = document.querySelector('[data-day-nav-next]');
+    if(prevBtn) prevBtn.onclick = () => shiftSelectedDay(-1);
+    if(nextBtn) nextBtn.onclick = () => shiftSelectedDay(1);
+  }
+
+  function activityCardHtml(a, nowMs){
+    const running = isRunning(a);
+    const elapsed = getActivityElapsedMs(a, nowMs);
+    const isEditing = (editingTimerId === a.id) && !running;
+
+    const timerHtml = isEditing
+      ? '<input type="text" class="timer-edit-input" id="timerEditInput" value="'+formatDuration(elapsed)+'" placeholder="HH:MM:SS">'
+      : '<div class="timer-row">'
+          + '<div class="timer'+(running?'':' editable')+'" data-timer="'+a.id+'" tabindex="0" role="button" title="'+(running?'Clique para copiar o tempo':'Clique para copiar · duplo clique para editar')+'">'+formatDuration(elapsed)+'</div>'
+          + '<button class="btn-toggle" data-toggle="'+a.id+'"'+(a.completed && !running ? ' disabled title="Desmarque a atividade como concluída para poder iniciar o cronômetro"' : '')+'>'+(running?'⏸ Pausar':'▶ Iniciar')+'</button>'
+        + '</div>';
+
+    const buttonsHtml = isEditing
+      ? '<div class="act-buttons"><button data-cancel-time="'+a.id+'">Cancelar</button><button class="primary" data-save-time="'+a.id+'">Salvar</button></div>'
+      : '';
+
+    const dragHandleHtml = '<div class="card-header-row">'
+      +   '<label class="complete-check" title="Marcar como concluída">'
+      +     '<input type="checkbox" data-complete="'+a.id+'"'+(a.completed?' checked':'')+' aria-label="Marcar atividade como concluída">'
+      +   '</label>'
+      +   '<div class="drag-handle" data-drag-handle="'+a.id+'" title="Arraste para reordenar" aria-label="Arraste para reordenar">'
+      +     '<svg viewBox="0 0 16 10" width="16" height="10" fill="currentColor">'
+      +       '<circle cx="2" cy="2" r="1.3"/><circle cx="8" cy="2" r="1.3"/><circle cx="14" cy="2" r="1.3"/>'
+      +       '<circle cx="2" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="14" cy="8" r="1.3"/>'
+      +     '</svg>'
+      +   '</div>'
+      +   '<button class="card-delete-btn" data-delete="'+a.id+'" title="Excluir atividade" aria-label="Excluir atividade">✕</button>'
+      + '</div>';
+
+    const isEditingDate = editingDateId === a.id;
+    const metaLineHtml = isEditingDate
+      ? '<div class="date-edit-row">'
+          + '<input type="date" id="dateEditInput" value="'+dayKey(a.createdAt)+'">'
+          + '<button data-cancel-date="'+a.id+'">Cancelar</button>'
+          + '<button class="primary" data-save-date="'+a.id+'">Salvar</button>'
+        + '</div>'
+      : '<div class="meta-line">criada em <span class="act-date" data-edit-date="'+a.id+'" title="Clique para alterar a data">'+new Date(a.createdAt).toLocaleString('pt-BR')+'</span></div>';
+
+    const chainPriorMs = getChainPriorMs(a, nowMs);
+    const chainPriorHtml = chainPriorMs > 0
+      ? '<div class="chain-prior-line"><span class="chain-prior-link" data-goto-activity="'+a.carriedFrom+'" role="button" tabindex="0" title="Ir para o card do dia anterior">⏱ '+formatHoursShort(chainPriorMs/3600000)+' em dias anteriores</span></div>'
+      : '';
+
+    return '<div class="activity-card'+(running?' running':'')+(a.completed?' completed':'')+'" data-id="'+a.id+'">'
+      +   dragHandleHtml
+      +   '<input type="text" class="act-name" data-id="'+a.id+'" maxlength="50" value="'+escapeHtml(a.name)+'">'
+      +   '<textarea class="act-desc" data-id="'+a.id+'" maxlength="500" placeholder="Descreva o que está sendo feito...">'+escapeHtml(a.description)+'</textarea>'
+      +   '<div class="desc-meta-row">'
+      +     '<button class="copy-desc-btn" data-copy-desc="'+a.id+'" title="Copiar descrição" aria-label="Copiar descrição">📋</button>'
+      +     '<div class="counter" data-desc-counter="'+a.id+'">'+ (a.description||'').length +' / 500</div>'
+      +   '</div>'
+      +   metaLineHtml
+      +   chainPriorHtml
+      +   timerHtml
+      +   buttonsHtml
+      + '</div>';
+  }
+
+  // Applies the same completed state to this activity and every prior link in its
+  // carry-over chain (walking back via carriedFrom), so finishing today's copy also
+  // closes out the earlier-day cards that originated it. Guards against a broken/cyclic chain.
+  function setCompletedAlongChain(activity, completed){
+    const seen = new Set();
+    const affectedDays = new Set();
+    let current = activity;
+    while(current && !seen.has(current.id)){
+      seen.add(current.id);
+      current.completed = completed;
+      affectedDays.add(dayKey(current.createdAt));
+      current = current.carriedFrom ? appData.activities.find(a => a.id === current.carriedFrom) : null;
+    }
+    affectedDays.forEach(enforceCompletionOrderForDay);
+  }
+
+  // Within a given day, keeps not-yet-completed activities ahead of completed ones — stably,
+  // so the relative order inside each of the two groups is otherwise untouched (including
+  // interleaving with other days' activities elsewhere in appData.activities).
+  function enforceCompletionOrderForDay(dayKeyStr){
+    const indices = [];
+    appData.activities.forEach((a, i) => { if(dayKey(a.createdAt) === dayKeyStr) indices.push(i); });
+    if(indices.length < 2) return;
+    const items = indices.map(i => appData.activities[i]);
+    const reordered = items.filter(a => !a.completed).concat(items.filter(a => a.completed));
+    indices.forEach((idx, k) => { appData.activities[idx] = reordered[k]; });
+  }
+
+  // Whenever an activity starts running, bring it to the front of its own day's group so the
+  // one currently counting is always the first card you see for that day.
+  function moveActivityToFrontOfDay(activity){
+    const dk = dayKey(activity.createdAt);
+    const indices = [];
+    appData.activities.forEach((a, i) => { if(dayKey(a.createdAt) === dk) indices.push(i); });
+    if(indices.length < 2) return;
+    const items = indices.map(i => appData.activities[i]);
+    const pos = items.indexOf(activity);
+    if(pos <= 0) return;
+    items.splice(pos, 1);
+    items.unshift(activity);
+    indices.forEach((idx, k) => { appData.activities[idx] = items[k]; });
+  }
+
+  function toggleCompleted(id){
+    const activity = appData.activities.find(a => a.id === id);
+    if(!activity) return;
+    setCompletedAlongChain(activity, !activity.completed);
+    saveData();
+    render();
+  }
+
+  async function copyTextToClipboard(text){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+
+  async function copyDescription(id){
+    const card = document.querySelector('.activity-card[data-id="'+id+'"]');
+    if(!card) return;
+    const descTa = card.querySelector('.act-desc');
+    const text = descTa ? descTa.value : '';
+    const btn = card.querySelector('[data-copy-desc="'+id+'"]');
+    try{
+      await copyTextToClipboard(text);
+      if(btn){
+        const original = btn.textContent;
+        btn.textContent = '✅';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          if(btn.isConnected){ btn.textContent = original; btn.classList.remove('copied'); }
+        }, 1000);
+      }
+    }catch(e){ console.error('Falha ao copiar descrição', e); }
+  }
+
+  async function copyTimerValue(el){
+    const text = el.textContent.trim();
+    try{
+      await copyTextToClipboard(text);
+      el.classList.add('copied-flash');
+      setTimeout(() => { if(el.isConnected) el.classList.remove('copied-flash'); }, 500);
+    }catch(e){ console.error('Falha ao copiar o tempo', e); }
+  }
+
+  function updateActivityDate(id, dateStr){
+    const activity = appData.activities.find(a => a.id === id);
+    if(!activity || !dateStr) return;
+    const [y,m,d] = dateStr.split('-').map(Number);
+    const old = new Date(activity.createdAt);
+    activity.createdAt = new Date(y, m-1, d, old.getHours(), old.getMinutes(), old.getSeconds(), old.getMilliseconds()).toISOString();
+    editingDateId = null;
+    saveData();
+    render();
+  }
+
+  function reorderActivities(sourceId, targetId){
+    const fromIndex = appData.activities.findIndex(a => a.id === sourceId);
+    if(fromIndex === -1) return;
+    const [moved] = appData.activities.splice(fromIndex, 1);
+    const toIndex = appData.activities.findIndex(a => a.id === targetId);
+    if(toIndex === -1){ appData.activities.splice(fromIndex, 0, moved); return; }
+    appData.activities.splice(toIndex, 0, moved);
+    saveData();
+    render();
+  }
+
+  function bindDragAndDropEvents(){
+    document.querySelectorAll('[data-drag-handle]').forEach(handle => {
+      handle.addEventListener('pointerdown', (e) => {
+        if(e.pointerType === 'mouse' && e.button !== 0) return;
+        const card = handle.closest('.activity-card');
+        if(!card) return;
+        dragSourceId = handle.getAttribute('data-drag-handle');
+        let currentTargetCard = null;
+        try{ handle.setPointerCapture(e.pointerId); }catch(err){}
+        card.classList.add('dragging');
+
+        const onMove = (ev) => {
+          if(currentTargetCard) currentTargetCard.classList.remove('drag-over');
+          currentTargetCard = null;
+          const el = document.elementFromPoint(ev.clientX, ev.clientY);
+          const targetCard = el && el.closest && el.closest('.activity-card');
+          if(targetCard && targetCard !== card){
+            const sourceDay = card.closest('.day-group');
+            const targetDay = targetCard.closest('.day-group');
+            if(sourceDay && targetDay && sourceDay === targetDay){
+              targetCard.classList.add('drag-over');
+              currentTargetCard = targetCard;
+            }
+          }
+        };
+        const onUp = () => {
+          handle.removeEventListener('pointermove', onMove);
+          handle.removeEventListener('pointerup', onUp);
+          handle.removeEventListener('pointercancel', onUp);
+          card.classList.remove('dragging');
+          if(currentTargetCard){
+            currentTargetCard.classList.remove('drag-over');
+            const targetId = currentTargetCard.getAttribute('data-id');
+            reorderActivities(dragSourceId, targetId);
+          }
+          dragSourceId = null;
+        };
+        handle.addEventListener('pointermove', onMove);
+        handle.addEventListener('pointerup', onUp);
+        handle.addEventListener('pointercancel', onUp);
+      });
+    });
+  }
+
+  function bindActivityEvents(){
+    bindDragAndDropEvents();
+    document.querySelectorAll('[data-toggle]').forEach(btn => {
+      btn.onclick = () => toggleActivity(btn.getAttribute('data-toggle'));
+    });
+    document.querySelectorAll('[data-delete]').forEach(btn => {
+      btn.onclick = () => deleteActivity(btn.getAttribute('data-delete'));
+    });
+    document.querySelectorAll('[data-complete]').forEach(cb => {
+      cb.onchange = () => toggleCompleted(cb.getAttribute('data-complete'));
+    });
+    document.querySelectorAll('[data-copy-desc]').forEach(btn => {
+      btn.onclick = () => copyDescription(btn.getAttribute('data-copy-desc'));
+    });
+    document.querySelectorAll('[data-edit-date]').forEach(el => {
+      el.onclick = () => { editingDateId = el.getAttribute('data-edit-date'); render(); };
+    });
+    document.querySelectorAll('[data-goto-activity]').forEach(el => {
+      const go = () => goToActivity(el.getAttribute('data-goto-activity'));
+      el.onclick = go;
+      el.onkeydown = (e) => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } };
+    });
+    document.querySelectorAll('[data-cancel-date]').forEach(btn => {
+      btn.onclick = () => { editingDateId = null; render(); };
+    });
+    document.querySelectorAll('[data-save-date]').forEach(btn => {
+      btn.onclick = () => {
+        const id = btn.getAttribute('data-save-date');
+        const inp = document.getElementById('dateEditInput');
+        if(inp) updateActivityDate(id, inp.value);
+      };
+    });
+    document.querySelectorAll('.act-name').forEach(inp => {
+      inp.onchange = () => updateActivityField(inp.getAttribute('data-id'), 'name', inp.value.slice(0,50));
+    });
+    document.querySelectorAll('.act-desc').forEach(ta => {
+      const id = ta.getAttribute('data-id');
+      const counterEl = document.querySelector('[data-desc-counter="'+id+'"]');
+      ta.addEventListener('input', () => { if(counterEl) counterEl.textContent = ta.value.length + ' / 500'; });
+      ta.onchange = () => updateActivityField(id, 'description', ta.value.slice(0,500));
+    });
+    document.querySelectorAll('[data-timer]').forEach(el => {
+      el.onclick = () => copyTimerValue(el);
+    });
+    document.querySelectorAll('.timer.editable').forEach(el => {
+      const openEdit = () => {
+        editingTimerId = el.getAttribute('data-timer');
+        render();
+        requestAnimationFrame(() => {
+          const inp = document.getElementById('timerEditInput');
+          if(inp){ inp.focus(); inp.select(); }
+        });
+      };
+      el.ondblclick = openEdit;
+      el.onkeydown = (e) => { if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openEdit(); } };
+    });
+    document.querySelectorAll('[data-save-time]').forEach(btn => {
+      btn.onclick = () => {
+        const id = btn.getAttribute('data-save-time');
+        const inp = document.getElementById('timerEditInput');
+        const ms = parseDurationInput(inp.value);
+        if(ms === null){ inp.focus(); inp.select(); return; }
+        const activity = appData.activities.find(a => a.id === id);
+        const current = getActivityElapsedMs(activity, Date.now());
+        activity.manualAdjustmentMs = (activity.manualAdjustmentMs||0) + (ms - current);
+        editingTimerId = null;
+        saveData();
+        render();
+      };
+    });
+    document.querySelectorAll('[data-cancel-time]').forEach(btn => {
+      btn.onclick = () => { editingTimerId = null; render(); };
+    });
+    const timerInput = document.getElementById('timerEditInput');
+    if(timerInput){
+      timerInput.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter'){
+          e.preventDefault();
+          const id = timerInput.closest('.activity-card').getAttribute('data-id');
+          const saveBtn = document.querySelector('[data-save-time="'+id+'"]');
+          if(saveBtn) saveBtn.click();
+        } else if(e.key === 'Escape'){
+          e.preventDefault();
+          editingTimerId = null;
+          render();
+        } else if(e.key === 'ArrowUp'){
+          e.preventDefault();
+          adjustTimeInputAtCursor(timerInput, 1);
+        } else if(e.key === 'ArrowDown'){
+          e.preventDefault();
+          adjustTimeInputAtCursor(timerInput, -1);
+        }
+      });
+    }
+  }
+
+  function adjustTimeInputAtCursor(input, deltaUnits){
+    const value = input.value;
+    const cursor = input.selectionStart == null ? value.length : input.selectionStart;
+    const colon1 = value.indexOf(':');
+    const colon2 = value.indexOf(':', colon1 + 1);
+    if(colon1 === -1 || colon2 === -1) return;
+
+    const segment = cursor <= colon1 ? 'h' : (cursor <= colon2 ? 'm' : 's');
+
+    let h = parseInt(value.slice(0, colon1), 10) || 0;
+    let m = parseInt(value.slice(colon1 + 1, colon2), 10) || 0;
+    let s = parseInt(value.slice(colon2 + 1), 10) || 0;
+
+    if(segment === 's'){
+      s += deltaUnits;
+      if(s >= 60){ s -= 60; m += 1; }
+      if(s < 0){ s += 60; m -= 1; }
+    } else if(segment === 'm'){
+      m += deltaUnits;
+      if(m >= 60){ m -= 60; h += 1; }
+      if(m < 0){ m += 60; h -= 1; }
+    } else {
+      h += deltaUnits;
+    }
+    if(h < 0) h = 0;
+    if(m < 0) m = 0;
+    if(s < 0) s = 0;
+
+    const newValue = pad(h) + ':' + pad(m) + ':' + pad(s);
+    input.value = newValue;
+
+    const newColon1 = newValue.indexOf(':');
+    const newColon2 = newValue.indexOf(':', newColon1 + 1);
+    let newCursor;
+    if(segment === 'h') newCursor = newColon1;
+    else if(segment === 'm') newCursor = newColon2;
+    else newCursor = newValue.length;
+    input.setSelectionRange(newCursor, newCursor);
+  }
+
+  function updateFooter(nowMs){
+    const todayKey = dayKey(new Date(nowMs));
+    const todayActivities = appData.activities.filter(a => dayKey(a.createdAt) === todayKey);
+    const totalMs = getDayTotalMs(todayKey, nowMs);
+    document.getElementById('footerTime').textContent = formatDuration(totalMs);
+    document.getElementById('footerActivities').textContent = todayActivities.length + ' atividade' + (todayActivities.length===1?'':'s') + ' hoje';
+    updateFooterPlayPauseButton();
+  }
+
+  // Mirrors the spacebar shortcut: pause the running activity, or resume the most recently
+  // paused one if none is running. Disabled when there's simply nothing eligible to act on.
+  function updateFooterPlayPauseButton(){
+    const btn = document.getElementById('btnFooterPlayPause');
+    if(!btn) return;
+    const running = getRunningActivity();
+    if(running){
+      btn.textContent = '⏸';
+      btn.classList.add('is-running');
+      btn.disabled = false;
+      btn.title = 'Pausar "'+running.name+'" (atalho: Espaço)';
+    } else {
+      const last = getLastActiveActivity();
+      btn.classList.remove('is-running');
+      btn.textContent = '▶';
+      btn.disabled = !last;
+      btn.title = last ? 'Retomar "'+last.name+'" (atalho: Espaço)' : 'Nenhuma atividade para retomar';
+    }
+  }
+
+  function lightTick(){
+    const nowMs = Date.now();
+    const running = getRunningActivity();
+    document.querySelectorAll('[data-timer]').forEach(el => {
+      const id = el.getAttribute('data-timer');
+      const a = appData.activities.find(x => x.id === id);
+      if(a) el.textContent = formatDuration(getActivityElapsedMs(a, nowMs));
+    });
+    document.querySelectorAll('[data-day-total]').forEach(el => {
+      const key = el.getAttribute('data-day-total');
+      el.textContent = 'Total do dia: ' + formatDuration(getDayTotalMs(key, nowMs));
+    });
+    updateFooter(nowMs);
+    if(running){
+      if(Math.floor(nowMs/1000) % 10 === 0) saveData();
+    }
+  }
+
+  function updateCounters(){
+    const name = document.getElementById('actName');
+    const nameCounter = document.getElementById('actNameCounter');
+    nameCounter.textContent = name.value.length + ' / 50';
+    nameCounter.classList.toggle('over', name.value.length >= 50);
+  }
+
+  // ---------- dashboard ----------
+  let dashboardRangeDays = 14;
+  let dashboardTableView = false;
+  let dashboardSelectedDay = null;
+
+  function niceCeil(value){
+    if(value <= 0) return 1;
+    const exp = Math.floor(Math.log10(value));
+    const base = Math.pow(10, exp);
+    const n = value / base;
+    let niceN;
+    if(n <= 1) niceN = 1;
+    else if(n <= 2) niceN = 2;
+    else if(n <= 5) niceN = 5;
+    else niceN = 10;
+    return niceN * base;
+  }
+
+  function formatHoursShort(hoursFloat){
+    const totalMin = Math.round(hoursFloat*60);
+    const h = Math.floor(totalMin/60);
+    const m = totalMin%60;
+    if(h <= 0) return m + 'min';
+    if(m === 0) return h + 'h';
+    return h + 'h ' + m + 'min';
+  }
+
+  function formatShortDate(d){
+    return pad(d.getDate()) + '/' + pad(d.getMonth()+1);
+  }
+
+  function getDashboardSeries(n){
+    const today = new Date();
+    const days = [];
+    for(let i = n-1; i >= 0; i--){
+      days.push(new Date(today.getFullYear(), today.getMonth(), today.getDate() - i));
+    }
+    const nowMs = Date.now();
+    return days.map(d => {
+      const key = dayKey(d);
+      const items = appData.activities.filter(a => dayKey(a.createdAt) === key);
+      const hours = getDayTotalMs(key, nowMs) / 3600000;
+      return { key, date: d, count: items.length, hours };
+    });
+  }
+
+  function roundedTopBarPath(x, yTop, w, yBottom){
+    const r = Math.max(0, Math.min(4, w/2, yBottom - yTop));
+    if(r <= 0.01) return 'M'+x+','+yBottom+' L'+x+','+yTop+' L'+(x+w)+','+yTop+' L'+(x+w)+','+yBottom+' Z';
+    return 'M'+x+','+yBottom
+      + ' L'+x+','+(yTop+r)
+      + ' Q'+x+','+yTop+' '+(x+r)+','+yTop
+      + ' L'+(x+w-r)+','+yTop
+      + ' Q'+(x+w)+','+yTop+' '+(x+w)+','+(yTop+r)
+      + ' L'+(x+w)+','+yBottom
+      + ' Z';
+  }
+
+  function renderBarChart(containerId, tooltipId, series, opts){
+    const container = document.getElementById(containerId);
+    const tooltip = document.getElementById(tooltipId);
+    const todayKey = dayKey(new Date());
+    const width = Math.max(260, container.clientWidth || 560);
+    const height = 140;
+    const padLeft = 30, padRight = 8, padTop = 10, padBottom = 20;
+    const plotW = width - padLeft - padRight;
+    const plotH = height - padTop - padBottom;
+    const n = series.length;
+    const slot = plotW / n;
+    const barW = Math.max(2, Math.min(24, slot - 4));
+    const maxRaw = Math.max(...series.map(opts.getValue), 0);
+    const niceMax = niceCeil(maxRaw);
+    const gridVals = [0, niceMax/2, niceMax];
+    const labelStep = Math.max(1, Math.ceil(n / 7));
+
+    let svg = '<svg viewBox="0 0 '+width+' '+height+'" width="100%" height="'+height+'" role="img" aria-label="'+escapeHtml(opts.ariaLabel)+'">';
+
+    gridVals.forEach(gv => {
+      const y = padTop + plotH - (niceMax>0 ? (gv/niceMax)*plotH : 0);
+      svg += '<line x1="'+padLeft+'" y1="'+y+'" x2="'+(padLeft+plotW)+'" y2="'+y+'" stroke="var(--border)" stroke-width="1"/>';
+      svg += '<text x="'+(padLeft-6)+'" y="'+(y+3)+'" font-size="9" fill="var(--muted)" text-anchor="end">'+opts.tickFormat(gv)+'</text>';
+    });
+
+    series.forEach((s, i) => {
+      const v = opts.getValue(s);
+      const barH = niceMax > 0 ? (v/niceMax)*plotH : 0;
+      const x = padLeft + i*slot + (slot-barW)/2;
+      const yTop = padTop + plotH - barH;
+      const yBottom = padTop + plotH;
+      const isToday = s.key === todayKey;
+      const isSelected = s.key === dashboardSelectedDay;
+      const color = isSelected ? 'var(--ok)' : (isToday ? 'var(--accent)' : 'var(--muted)');
+      const opacity = isSelected || isToday ? '1' : '.45';
+      if(barH > 0.3){
+        svg += '<path d="'+roundedTopBarPath(x, yTop, barW, yBottom)+'" fill="'+color+'" opacity="'+opacity+'"/>';
+      }
+      svg += '<rect class="chart-bar-hit" data-idx="'+i+'" x="'+(padLeft+i*slot)+'" y="'+padTop+'" width="'+slot+'" height="'+plotH+'" tabindex="0" role="button" aria-label="'+escapeHtml(opts.tooltipFormat(s))+'"></rect>';
+      if(i % labelStep === 0){
+        svg += '<text x="'+(x+barW/2)+'" y="'+(height-5)+'" font-size="9" fill="var(--muted)" text-anchor="middle"'+(isToday?' font-weight="700"':'')+'>'+formatShortDate(s.date)+'</text>';
+      }
+    });
+
+    svg += '</svg>';
+    container.innerHTML = svg;
+
+    container.querySelectorAll('.chart-bar-hit').forEach(hit => {
+      const idx = Number(hit.getAttribute('data-idx'));
+      const s = series[idx];
+      const show = () => {
+        tooltip.textContent = opts.tooltipFormat(s);
+        tooltip.style.display = 'block';
+        const hitRect = hit.getBoundingClientRect();
+        const wrapRect = container.parentElement.getBoundingClientRect();
+        tooltip.style.left = (hitRect.left - wrapRect.left + hitRect.width/2) + 'px';
+        tooltip.style.top = (hitRect.top - wrapRect.top) + 'px';
+      };
+      const hide = () => { tooltip.style.display = 'none'; };
+      hit.addEventListener('pointerenter', show);
+      hit.addEventListener('pointermove', show);
+      hit.addEventListener('pointerleave', hide);
+      hit.addEventListener('focus', show);
+      hit.addEventListener('blur', hide);
+      if(opts.onBarClick){
+        hit.addEventListener('click', () => opts.onBarClick(s));
+        hit.addEventListener('keydown', (e) => {
+          if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); opts.onBarClick(s); }
+        });
+      }
+    });
+  }
+
+  function renderDashboardTable(series){
+    let html = '<table class="dash-table"><thead><tr><th>Data</th><th>Atividades</th><th>Horas</th></tr></thead><tbody>';
+    series.forEach(s => {
+      html += '<tr><td>'+formatDayLabel(s.key)+'</td><td class="num">'+s.count+'</td><td class="num">'+formatHoursShort(s.hours)+'</td></tr>';
+    });
+    html += '</tbody></table>';
+    document.getElementById('dashTableWrap').innerHTML = html;
+  }
+
+  function renderDashboard(){
+    const series = getDashboardSeries(dashboardRangeDays);
+
+    document.querySelectorAll('.dash-controls [data-range]').forEach(btn => {
+      btn.classList.toggle('active', Number(btn.getAttribute('data-range')) === dashboardRangeDays);
+    });
+
+    document.getElementById('dashCharts').style.display = dashboardTableView ? 'none' : 'block';
+    document.getElementById('dashTableWrap').style.display = dashboardTableView ? 'block' : 'none';
+    document.getElementById('btnDashTableToggle').textContent = dashboardTableView ? 'Ver como gráfico' : 'Ver como tabela';
+
+    if(dashboardTableView){
+      renderDashboardTable(series);
+    } else {
+      renderBarChart('chartCount', 'chartCountTooltip', series, {
+        getValue: s => s.count,
+        tickFormat: v => String(Math.round(v)),
+        tooltipFormat: s => formatDayLabel(s.key) + ': ' + s.count + ' atividade' + (s.count===1?'':'s'),
+        ariaLabel: 'Quantidade de atividades por dia',
+        onBarClick: selectDashboardDay
+      });
+      renderBarChart('chartHours', 'chartHoursTooltip', series, {
+        getValue: s => s.hours,
+        tickFormat: v => (Math.round(v*10)/10) + 'h',
+        tooltipFormat: s => formatDayLabel(s.key) + ': ' + formatHoursShort(s.hours),
+        ariaLabel: 'Horas trabalhadas por dia',
+        onBarClick: selectDashboardDay
+      });
+    }
+    renderBreakdown();
+  }
+
+  function selectDashboardDay(s){
+    dashboardSelectedDay = (dashboardSelectedDay === s.key) ? null : s.key;
+    renderDashboard();
+  }
+
+  function getDateRangeBounds(n){
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (n-1)).getTime();
+    const end = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).getTime();
+    return { start, end };
+  }
+
+  function getActivityBreakdown(n){
+    const { start, end } = getDateRangeBounds(n);
+    const nowMs = Date.now();
+    const totals = {};
+    for(const a of appData.activities){
+      const createdMs = new Date(a.createdAt).getTime();
+      if(createdMs < start || createdMs >= end) continue;
+      const name = a.name || '(sem nome)';
+      totals[name] = (totals[name] || 0) + getActivityElapsedMs(a, nowMs);
+    }
+    return Object.keys(totals).map(name => ({ name, ms: totals[name] })).sort((x,y) => y.ms - x.ms);
+  }
+
+  function getActivityBreakdownForDay(dayKeyStr){
+    const nowMs = Date.now();
+    const totals = {};
+    for(const a of appData.activities){
+      if(dayKey(a.createdAt) !== dayKeyStr) continue;
+      const name = a.name || '(sem nome)';
+      totals[name] = (totals[name] || 0) + getActivityElapsedMs(a, nowMs);
+    }
+    return Object.keys(totals).map(name => ({ name, ms: totals[name] })).sort((x,y) => y.ms - x.ms);
+  }
+
+  function renderBreakdown(){
+    const data = dashboardSelectedDay ? getActivityBreakdownForDay(dashboardSelectedDay) : getActivityBreakdown(dashboardRangeDays);
+    const titleEl = document.getElementById('breakdownTitle');
+    if(titleEl){
+      titleEl.innerHTML = dashboardSelectedDay
+        ? 'Horas por atividade <span style="text-transform:none;letter-spacing:0;font-weight:400">— '+escapeHtml(formatDayLabel(dashboardSelectedDay))+'</span> <span class="breakdown-clear" id="btnClearDaySelect" role="button" tabindex="0" title="Ver período completo">✕</span>'
+        : 'Horas por atividade no período';
+      const clearBtn = document.getElementById('btnClearDaySelect');
+      if(clearBtn){
+        clearBtn.onclick = () => { dashboardSelectedDay = null; renderDashboard(); };
+        clearBtn.onkeydown = (e) => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); clearBtn.onclick(); } };
+      }
+    }
+    const container = document.getElementById('chartBreakdown');
+    if(!container) return;
+    if(data.length === 0){ container.innerHTML = '<div class="empty">Sem dados '+(dashboardSelectedDay?'neste dia':'no período')+'.</div>'; return; }
+    const top = data.slice(0, 8);
+    const rest = data.slice(8);
+    const maxMs = Math.max(...top.map(d => d.ms), 1);
+    let html = top.map(d => {
+      const pct = Math.max(2, Math.round((d.ms/maxMs)*100));
+      return '<div class="breakdown-row">'
+        + '<div class="breakdown-name" title="'+escapeHtml(d.name)+'">'+escapeHtml(d.name)+'</div>'
+        + '<div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:'+pct+'%"></div></div>'
+        + '<div class="breakdown-value">'+formatHoursShort(d.ms/3600000)+'</div>'
+        + '</div>';
+    }).join('');
+    if(rest.length){
+      const restMs = rest.reduce((s,d) => s+d.ms, 0);
+      html += '<div class="meta-line" style="margin-top:6px">+ '+rest.length+' outra(s) atividade(s): '+formatHoursShort(restMs/3600000)+'</div>';
+    }
+    container.innerHTML = html;
+  }
+
+  function csvEscape(str){
+    const s = String(str == null ? '' : str);
+    if(/["\n;]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+    return s;
+  }
+
+  function exportCsv(){
+    const { start, end } = getDateRangeBounds(dashboardRangeDays);
+    const nowMs = Date.now();
+    const rows = [['Data','Atividade','Descrição','Horas (HH:MM:SS)','Horas (decimal)']];
+    appData.activities
+      .filter(a => { const t = new Date(a.createdAt).getTime(); return t >= start && t < end; })
+      .sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt))
+      .forEach(a => {
+        const ms = getActivityElapsedMs(a, nowMs);
+        rows.push([ dayKey(a.createdAt), a.name, a.description, formatDuration(ms), (ms/3600000).toFixed(2) ]);
+      });
+    const csv = rows.map(r => r.map(csvEscape).join(';')).join('\r\n');
+    const blob = new Blob(['﻿'+csv], { type:'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'clock-relatorio-'+dayKey(new Date())+'.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function buildPrintReport(){
+    const { start, end } = getDateRangeBounds(dashboardRangeDays);
+    const nowMs = Date.now();
+    const rows = appData.activities
+      .filter(a => { const t = new Date(a.createdAt).getTime(); return t >= start && t < end; })
+      .sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+    const totalMs = rows.reduce((s,a) => s+getActivityElapsedMs(a, nowMs), 0);
+    let html = '<h1>CLOCK — Relatório de atividades</h1>';
+    html += '<div class="print-sub">Período: últimos '+dashboardRangeDays+' dias · Total: '+formatDuration(totalMs)+'</div>';
+    html += '<table><thead><tr><th>Data</th><th>Atividade</th><th>Descrição</th><th>Horas</th></tr></thead><tbody>';
+    rows.forEach(a => {
+      html += '<tr><td>'+formatDayLabel(dayKey(a.createdAt)).replace(' (hoje)','')+'</td><td>'+escapeHtml(a.name)+'</td><td>'+escapeHtml(a.description)+'</td><td>'+formatDuration(getActivityElapsedMs(a, nowMs))+'</td></tr>';
+    });
+    html += '</tbody></table>';
+    document.getElementById('printReport').innerHTML = html;
+  }
+
+  function printReport(){
+    buildPrintReport();
+    window.print();
+  }
+
+  function openDashboardModal(){
+    const dashLeft = document.getElementById('dashLeftControls');
+    const calWrap = document.getElementById('calWrap');
+    dashLeft.insertBefore(calWrap, dashLeft.firstChild);
+    dashboardSelectedDay = null;
+    document.getElementById('dashboardModal').style.display = 'flex';
+    renderDashboard();
+  }
+  function closeDashboardModal(){
+    const mainLeft = document.getElementById('mainLeftControls');
+    const calWrap = document.getElementById('calWrap');
+    mainLeft.insertBefore(calWrap, mainLeft.firstChild);
+    document.getElementById('dashboardModal').style.display = 'none';
+  }
+
+  // ---------- wiring ----------
+  document.getElementById('btnNewActivity').onclick = openNewActivityModal;
+  document.getElementById('btnCancelActivity').onclick = closeNewActivityModal;
+  document.getElementById('btnAddActivity').onclick = addActivity;
+  document.getElementById('actName').addEventListener('input', updateCounters);
+  document.getElementById('actName').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      if(isBackfillMode()) document.getElementById('actDescModal').focus();
+      else addActivity();
+    }
+  });
+  document.getElementById('actDescModal').addEventListener('input', updateDescModalCounter);
+  document.getElementById('actTimeModal').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){ e.preventDefault(); addActivity(); }
+  });
+  document.getElementById('newActivityModal').addEventListener('mousedown', (e) => {
+    if(e.target.id === 'newActivityModal') closeNewActivityModal();
+  });
+
+  document.getElementById('btnDashboard').onclick = openDashboardModal;
+  document.getElementById('btnBackToActivities').onclick = closeDashboardModal;
+  document.getElementById('btnNewActivityDash').onclick = openNewActivityModal;
+  document.querySelectorAll('.dash-controls [data-range]').forEach(btn => {
+    btn.onclick = () => {
+      dashboardRangeDays = Number(btn.getAttribute('data-range'));
+      dashboardSelectedDay = null;
+      renderDashboard();
+    };
+  });
+  document.getElementById('btnDashTableToggle').onclick = () => {
+    dashboardTableView = !dashboardTableView;
+    renderDashboard();
+  };
+
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && document.getElementById('dashboardModal').style.display === 'flex') closeDashboardModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && document.getElementById('newActivityModal').style.display === 'flex') closeNewActivityModal();
+  });
+
+  function isEditableTarget(el){
+    if(!el) return false;
+    const tag = el.tagName;
+    return tag === 'INPUT' || tag === 'TEXTAREA' || el.isContentEditable;
+  }
+  document.addEventListener('keydown', (e) => {
+    if(e.key !== '+') return;
+    if(isEditableTarget(e.target)) return;
+    if(document.getElementById('dashboardModal').style.display === 'flex') return;
+    if(document.getElementById('newActivityModal').style.display === 'flex') return;
+    e.preventDefault();
+    openNewActivityModal();
+  });
+  // Spacebar: pause the running activity, or resume the most recently paused one if none
+  // is running. This is the ONLY spacebar handler — a second one used to live further down
+  // and fired on the same keydown, undoing this one's toggle (pause here, instant resume
+  // there) so the key visibly did nothing. Keep it that way: one handler, one outcome.
+  document.addEventListener('keydown', (e) => {
+    if(e.key !== ' ' && e.key !== 'Spacebar') return;
+    if(isEditableTarget(e.target)) return;
+    if(e.target && e.target.tagName === 'BUTTON') return; // avoid double-toggling a focused toggle button
+    if(document.getElementById('dashboardModal').style.display === 'flex') return;
+    if(document.getElementById('newActivityModal').style.display === 'flex') return;
+    const activity = getLastActiveActivity();
+    if(!activity) return;
+    e.preventDefault();
+    toggleActivity(activity.id);
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    if(isEditableTarget(e.target)) return;
+    if(document.getElementById('dashboardModal').style.display === 'flex') return;
+    if(document.getElementById('newActivityModal').style.display === 'flex') return;
+    if(showAllDays || searchQuery) return;
+    e.preventDefault();
+    shiftSelectedDay(e.key === 'ArrowLeft' ? -1 : 1);
+  });
+
+  document.addEventListener('focusin', (e) => {
+    const isExpandableField = e.target.classList && (e.target.classList.contains('act-name') || e.target.classList.contains('act-desc'));
+    if(!isExpandableField) return;
+    const card = e.target.closest && e.target.closest('.activity-card');
+    if(card) card.classList.add('expanded');
+  });
+  document.addEventListener('focusout', (e) => {
+    const card = e.target.closest && e.target.closest('.activity-card');
+    if(!card) return;
+    setTimeout(() => {
+      if(!card.contains(document.activeElement)) card.classList.remove('expanded');
+    }, 0);
+  });
+
+  document.getElementById('calPrev').onclick = () => {
+    calendarViewMonth = new Date(calendarViewMonth.getFullYear(), calendarViewMonth.getMonth()-1, 1);
+    render();
+  };
+  document.getElementById('calNext').onclick = () => {
+    calendarViewMonth = new Date(calendarViewMonth.getFullYear(), calendarViewMonth.getMonth()+1, 1);
+    render();
+  };
+  function goToToday(){
+    const t = new Date();
+    selectedDate = t;
+    calendarViewMonth = new Date(t.getFullYear(), t.getMonth(), 1);
+    showAllDays = false;
+    editingTimerId = null;
+    render();
+  }
+  document.getElementById('calToday').onclick = goToToday;
+  document.getElementById('calToggleAll').onclick = () => {
+    showAllDays = !showAllDays;
+    if(showAllDays) allDaysVisibleCount = 30;
+    editingTimerId = null;
+    render();
+  };
+
+  // ---------- theme ----------
+  function applyTheme(theme){
+    if(theme === 'light' || theme === 'dark'){
+      document.documentElement.setAttribute('data-theme', theme);
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    // Button shows (and is colored for) the theme a click will switch TO — the opposite
+    // of what's active now — not the one currently applied.
+    const label = theme === 'light' ? '🌙 Escuro' : theme === 'dark' ? '☀️ Claro' : '🖥️ Tema';
+    const btn = document.getElementById('btnThemeToggle');
+    if(btn){
+      btn.textContent = label;
+      btn.classList.remove('to-light','to-dark');
+      if(theme === 'light') btn.classList.add('to-dark');
+      else if(theme === 'dark') btn.classList.add('to-light');
+    }
+  }
+  function getStoredTheme(){
+    try{ return localStorage.getItem(THEME_KEY) || 'system'; }catch(e){ return 'system'; }
+  }
+  function resolveActiveTheme(){
+    const stored = getStoredTheme();
+    if(stored === 'light' || stored === 'dark') return stored;
+    try{
+      if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
+    }catch(e){}
+    return 'light';
+  }
+  function cycleTheme(){
+    const next = resolveActiveTheme() === 'dark' ? 'light' : 'dark';
+    try{ localStorage.setItem(THEME_KEY, next); }catch(e){}
+    applyTheme(next);
+  }
+  function reloadPage(){ location.reload(); }
+  const brandIconBtn = document.getElementById('brandIconBtn');
+  const brandIconBtnDash = document.getElementById('brandIconBtnDash');
+  [brandIconBtn, brandIconBtnDash].forEach(el => {
+    if(!el) return;
+    el.onclick = reloadPage;
+    el.onkeydown = (e) => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); reloadPage(); } };
+  });
+
+  document.getElementById('btnThemeToggle').onclick = cycleTheme;
+  applyTheme(getStoredTheme());
+
+  // ---------- search ----------
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    searchQuery = e.target.value.trim().toLowerCase();
+    document.getElementById('btnSearchClear').style.display = searchQuery ? 'inline-block' : 'none';
+    render();
+  });
+  document.getElementById('btnSearchClear').onclick = () => {
+    searchQuery = '';
+    document.getElementById('searchInput').value = '';
+    document.getElementById('btnSearchClear').style.display = 'none';
+    render();
+  };
+
+  // ---------- dashboard export / print ----------
+  document.getElementById('btnExportCsv').onclick = exportCsv;
+  document.getElementById('btnPrintReport').onclick = printReport;
+
+  // ---------- PWA ----------
+  if('serviceWorker' in navigator && (location.protocol === 'http:' || location.protocol === 'https:')){
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+
+  if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+  if(supportsFS){
+    setFileLinkState('Vincular arquivo', notConnectedPopoverHtml());
+    // Wait for the backup handle to reconnect before the main file, so a corruption
+    // recovery prompt during tryAutoReconnect can actually see backupHandle if linked.
+    tryAutoReconnectBackup().then(tryAutoReconnect);
+  } else {
+    setFileLinkState('Modo exportação manual', fallbackPopoverHtml());
+    (async () => {
+      const stored = await idbGetAppData();
+      if(stored) appData = normalize(stored); else loadLegacyDraftFromLocalStorage();
+      if(carryOverIncompleteActivities() || !stored) await saveData();
+      render();
+    })();
+  }
+
+  render();
+  tickTimer = setInterval(lightTick, 1000);
+  setInterval(() => { if(fileHandle) checkForExternalChanges(); }, 15000);
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'visible' && fileHandle) checkForExternalChanges();
+  });
+  window.addEventListener('focus', () => { if(fileHandle) checkForExternalChanges(); });
+
+  document.getElementById('btnSyncReload').onclick = async () => {
+    document.getElementById('syncWarning').style.display = 'none';
+    if(!fileHandle) return;
+    const { data: fileData } = await readFileHandle(fileHandle);
+    if(appData.activities.length > 0 && !dataEquivalent(fileData, appData)){
+      const keepLocal = confirm(
+        'O conteúdo do arquivo no disco é diferente do que está na tela.\n\n'
+        + 'Clique OK para GRAVAR as informações atuais da tela no arquivo (substituindo o que foi alterado por fora).\n'
+        + 'Clique Cancelar para DESCARTAR as informações da tela e usar o conteúdo do arquivo.'
+      );
+      if(keepLocal){ await saveData(); } else { appData = fileData; await saveData(); }
+    } else {
+      appData = fileData;
+      await saveData();
+    }
+    render();
+  };
+  document.getElementById('btnSyncDismiss').onclick = () => {
+    document.getElementById('syncWarning').style.display = 'none';
+    if(fileHandle){
+      fileHandle.getFile().then(f => { lastKnownFileModified = f.lastModified; }).catch(() => {});
+    }
+  };
+
+  window.addEventListener('beforeunload', () => {
+    if(getRunningActivity()) saveData();
+  });
+})();
+</script>
+</body>
+</html>
