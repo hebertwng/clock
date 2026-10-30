@@ -103,10 +103,10 @@
   /* absolute (not fixed): scrolls away with the page instead of floating over content on mobile */
   .corner-top-right{position:absolute;top:10px;right:16px;z-index:5;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
   .corner-top-right button{font-size:12px;padding:5px 10px;min-height:0;line-height:1.3}
-  #btnThemeToggle.to-light{background:#ffffff;color:#1c1f26;border-color:#dde1e8}
-  #btnThemeToggle.to-light:hover{border-color:#2f6fed}
-  #btnThemeToggle.to-dark{background:#171a21;color:#e7e9ee;border-color:#2a2f3a}
-  #btnThemeToggle.to-dark:hover{border-color:#4f8cff}
+  .theme-toggle-btn.to-light{background:#ffffff;color:#1c1f26;border-color:#dde1e8}
+  .theme-toggle-btn.to-light:hover{border-color:#2f6fed}
+  .theme-toggle-btn.to-dark{background:#171a21;color:#e7e9ee;border-color:#2a2f3a}
+  .theme-toggle-btn.to-dark:hover{border-color:#4f8cff}
 
   /* dashboard: full screen, not a popup */
   .dashboard-screen{position:fixed;inset:0;background:var(--bg);z-index:70;display:flex;flex-direction:column;overflow-y:auto}
@@ -264,12 +264,17 @@
     .corner-top-right{right:10px}
     .corner-left{left:10px;bottom:10px;max-width:calc(100vw - 20px - 136px)}
     .corner-time{font-size:17px}
-    .search-wrap{max-width:100%;flex-basis:100%}
+    .top-bar .left-controls{order:1}
+    .top-bar button.primary{order:2}
+    .search-wrap{max-width:100%;flex-basis:100%;order:3}
     .activities-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
     .activity-card.expanded .act-desc{min-height:110px}
     .timer-row{flex-direction:column;align-items:stretch;gap:6px}
     .timer-row .timer{text-align:center}
     .timer-row .btn-toggle{width:100%}
+    .dashboard-content{padding:14px 14px 48px}
+    .breakdown-row .breakdown-name{flex:0 0 84px}
+    .breakdown-row .breakdown-value{flex:0 0 56px}
   }
 </style>
 </head>
@@ -282,8 +287,9 @@
 </div>
 
 <div class="corner-top-right">
-  <button class="cal-toggle" id="btnLangToggle" title="Idioma / Language">🌐 PT</button>
-  <button class="cal-toggle" id="btnThemeToggle" data-i18n-title="title_toggle_theme" title="Alternar tema">🖥️ Tema</button>
+  <button class="cal-toggle github-toggle-btn" id="btnGithub" data-i18n-title="title_view_github" title="Ver código no GitHub">🐙 GitHub</button>
+  <button class="cal-toggle lang-toggle-btn" id="btnLangToggle" title="Idioma / Language">🌐 PT</button>
+  <button class="cal-toggle theme-toggle-btn" id="btnThemeToggle" data-i18n-title="title_toggle_theme" title="Alternar tema">🖥️ Tema</button>
 </div>
 
 <div class="brand">CLOCK</div>
@@ -363,6 +369,11 @@
 </div>
 
 <div class="dashboard-screen" id="dashboardModal" style="display:none">
+  <div class="corner-top-right">
+    <button class="cal-toggle github-toggle-btn" id="btnGithubDash" data-i18n-title="title_view_github" title="Ver código no GitHub">🐙 GitHub</button>
+    <button class="cal-toggle lang-toggle-btn" id="btnLangToggleDash" title="Idioma / Language">🌐 PT</button>
+    <button class="cal-toggle theme-toggle-btn" id="btnThemeToggleDash" data-i18n-title="title_toggle_theme" title="Alternar tema">🖥️ Tema</button>
+  </div>
   <div class="brand">CLOCK</div>
   <div class="brand-icon brand-icon-btn" id="brandIconBtnDash" role="button" tabindex="0" data-i18n-title="title_refresh_page" title="Atualizar a página">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -379,6 +390,10 @@
       <button class="cal-toggle" id="btnBackToActivities" data-i18n="btn_activities">📋 Atividades</button>
     </div>
     <button class="primary" id="btnNewActivityDash" data-i18n="btn_new_activity">+ Nova atividade</button>
+    <div class="search-wrap">
+      <input type="text" id="searchInputDash" data-i18n-placeholder="search_placeholder" placeholder="🔎 Buscar atividade...">
+      <button class="search-clear-btn" id="btnSearchClearDash" style="display:none" data-i18n-title="title_clear_search" data-i18n-aria="title_clear_search" title="Limpar busca" aria-label="Limpar busca">✕</button>
+    </div>
   </div>
   <hr class="divider">
   <div class="dashboard-content">
@@ -454,6 +469,7 @@
       btn_reload_from_file: 'Recarregar do arquivo',
       btn_ignore: 'Ignorar',
       title_toggle_theme: 'Alternar tema',
+      title_view_github: 'Ver código no GitHub',
       theme_dark: '🌙 Escuro',
       theme_light: '☀️ Claro',
       theme_system: '🖥️ Tema',
@@ -566,6 +582,7 @@
       btn_reload_from_file: 'Reload from file',
       btn_ignore: 'Ignore',
       title_toggle_theme: 'Toggle theme',
+      title_view_github: 'View source on GitHub',
       theme_dark: '🌙 Dark',
       theme_light: '☀️ Light',
       theme_system: '🖥️ Theme',
@@ -700,8 +717,9 @@
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
     document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.getAttribute('data-i18n-title')); });
     document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria'))); });
-    const langBtn = document.getElementById('btnLangToggle');
-    if(langBtn) langBtn.textContent = currentLang === 'en' ? '🌐 EN' : '🌐 PT';
+    document.querySelectorAll('.lang-toggle-btn').forEach(btn => {
+      btn.textContent = currentLang === 'en' ? '🌐 EN' : '🌐 PT';
+    });
   }
 
   let appData = { activities: [], lastCarryOverDate: null };
@@ -1460,13 +1478,7 @@
     showAllDays = false;
     editingTimerId = null;
     editingDateId = null;
-    if(searchQuery){
-      searchQuery = '';
-      const searchInput = document.getElementById('searchInput');
-      if(searchInput) searchInput.value = '';
-      const clearBtn = document.getElementById('btnSearchClear');
-      if(clearBtn) clearBtn.style.display = 'none';
-    }
+    if(searchQuery) setSearchQuery('');
     render();
     requestAnimationFrame(() => {
       const card = document.querySelector('.activity-card[data-id="'+id+'"]');
@@ -2475,13 +2487,12 @@
     // Button shows (and is colored for) the theme a click will switch TO — the opposite
     // of what's active now — not the one currently applied.
     const label = theme === 'light' ? t('theme_dark') : theme === 'dark' ? t('theme_light') : t('theme_system');
-    const btn = document.getElementById('btnThemeToggle');
-    if(btn){
+    document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
       btn.textContent = label;
       btn.classList.remove('to-light','to-dark');
       if(theme === 'light') btn.classList.add('to-dark');
       else if(theme === 'dark') btn.classList.add('to-light');
-    }
+    });
   }
   function getStoredTheme(){
     try{ return localStorage.getItem(THEME_KEY) || 'system'; }catch(e){ return 'system'; }
@@ -2508,7 +2519,7 @@
     el.onkeydown = (e) => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); reloadPage(); } };
   });
 
-  document.getElementById('btnThemeToggle').onclick = cycleTheme;
+  document.querySelectorAll('.theme-toggle-btn').forEach(btn => { btn.onclick = cycleTheme; });
   applyTheme(getStoredTheme());
 
   // ---------- language ----------
@@ -2523,19 +2534,43 @@
     render();
     if(document.getElementById('dashboardModal').style.display === 'flex') renderDashboard();
   }
-  document.getElementById('btnLangToggle').onclick = () => setLang(currentLang === 'en' ? 'pt-BR' : 'en');
+  document.querySelectorAll('.lang-toggle-btn').forEach(btn => {
+    btn.onclick = () => setLang(currentLang === 'en' ? 'pt-BR' : 'en');
+  });
+  document.querySelectorAll('.github-toggle-btn').forEach(btn => {
+    btn.onclick = () => window.open('https://github.com/hebertwng/clock', '_blank', 'noopener');
+  });
   applyStaticTranslations();
 
   // ---------- search ----------
+  // Shared between the main view and the dashboard's own search box: keeps both inputs and
+  // clear buttons in sync regardless of which one the user is typing into.
+  function setSearchQuery(raw){
+    searchQuery = raw.trim().toLowerCase();
+    const hasQuery = !!searchQuery;
+    ['searchInput','searchInputDash'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el && el.value !== raw) el.value = raw;
+    });
+    ['btnSearchClear','btnSearchClearDash'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.style.display = hasQuery ? 'inline-block' : 'none';
+    });
+  }
   document.getElementById('searchInput').addEventListener('input', (e) => {
-    searchQuery = e.target.value.trim().toLowerCase();
-    document.getElementById('btnSearchClear').style.display = searchQuery ? 'inline-block' : 'none';
+    setSearchQuery(e.target.value);
     render();
   });
   document.getElementById('btnSearchClear').onclick = () => {
-    searchQuery = '';
-    document.getElementById('searchInput').value = '';
-    document.getElementById('btnSearchClear').style.display = 'none';
+    setSearchQuery('');
+    render();
+  };
+  document.getElementById('searchInputDash').addEventListener('input', (e) => {
+    setSearchQuery(e.target.value);
+    render();
+  });
+  document.getElementById('btnSearchClearDash').onclick = () => {
+    setSearchQuery('');
     render();
   };
 

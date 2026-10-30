@@ -2,6 +2,8 @@
 
 PWA de controle de horas e registro de atividades — 100% local, sem servidor e sem nuvem.
 
+**🔗 Acessar a aplicação: https://hebertwng.github.io/clock/**
+
 ## O que é
 
 CLOCK é um aplicativo web (PWA) para cronometrar atividades do dia a dia, organizar por data, acompanhar totais num dashboard com gráficos e exportar relatórios. Todo o processamento acontece no seu navegador; não há backend, não há chamadas de rede e nenhum dado é enviado a lugar nenhum.
