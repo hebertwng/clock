@@ -856,6 +856,33 @@
     document.getElementById('filePopover').innerHTML = popoverHtml;
     bindFilePopoverEvents();
   }
+
+  // Tracks which file-link state is showing so a language switch can regenerate the label
+  // and popover in the new language — setFileLinkState() only renders a snapshot, it doesn't
+  // remember what it rendered, so without this a lang change would leave this corner stale.
+  let fileLinkStatus = 'not-connected';
+  function setFileLinkStatus(status){
+    fileLinkStatus = status;
+    refreshFileLinkUI();
+  }
+  function refreshFileLinkUI(){
+    switch(fileLinkStatus){
+      case 'connected':
+        setFileLinkState((fileHandle ? fileHandle.name : '') + ' ✓', connectedPopoverHtml());
+        break;
+      case 'perm-denied':
+        setFileLinkState(t('file_perm_denied'), notConnectedPopoverHtml());
+        break;
+      case 'reconnect':
+        setFileLinkState(t('file_click_reconnect'), reconnectPopoverHtml());
+        break;
+      case 'manual':
+        setFileLinkState(t('file_manual_mode'), fallbackPopoverHtml());
+        break;
+      default:
+        setFileLinkState(t('file_link'), notConnectedPopoverHtml());
+    }
+  }
   function backupButtonHtml(){
     return '<button id="btnLinkBackup">'+(backupHandle ? '📦 '+t('btn_change_backup',{name:escapeHtml(backupHandle.name)}) : '📦 '+t('btn_link_backup'))+'</button>';
   }
@@ -986,7 +1013,7 @@
   async function connectHandle(handle, { isNew=false } = {}){
     const perm = await handle.requestPermission({ mode:'readwrite' });
     if(perm !== 'granted'){
-      setFileLinkState(t('file_perm_denied'), notConnectedPopoverHtml());
+      setFileLinkStatus('perm-denied');
       return false;
     }
     fileHandle = handle;
@@ -1008,7 +1035,7 @@
         await saveData();
       }
     }
-    setFileLinkState(handle.name + ' ✓', connectedPopoverHtml());
+    setFileLinkStatus('connected');
     render();
     return true;
   }
@@ -1043,7 +1070,7 @@
       backupHandle = handle;
       await idbSetHandle(BACKUP_HANDLE_KEY, handle);
       if(fileHandle){
-        setFileLinkState(fileHandle.name + ' ✓', connectedPopoverHtml());
+        setFileLinkStatus('connected');
       }
     }catch(e){ /* user cancelled */ }
   }
@@ -1125,9 +1152,9 @@
             }
             seededFromFile = true;
           }
-          setFileLinkState(handle.name + ' ✓', connectedPopoverHtml());
+          setFileLinkStatus('connected');
         } else {
-          setFileLinkState(t('file_click_reconnect'), reconnectPopoverHtml());
+          setFileLinkStatus('reconnect');
         }
       }catch(e){ /* keep whatever was loaded from IndexedDB/legacy draft above */ }
     }
@@ -2491,6 +2518,8 @@
     try{ localStorage.setItem(LANG_KEY, lang); }catch(e){}
     applyStaticTranslations();
     applyTheme(resolveActiveTheme()); // re-translate the theme button's current label
+    refreshFileLinkUI();
+    updateLastSavedLabel();
     render();
     if(document.getElementById('dashboardModal').style.display === 'flex') renderDashboard();
   }
@@ -2524,12 +2553,12 @@
   if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 
   if(supportsFS){
-    setFileLinkState(t('file_link'), notConnectedPopoverHtml());
+    setFileLinkStatus('not-connected');
     // Wait for the backup handle to reconnect before the main file, so a corruption
     // recovery prompt during tryAutoReconnect can actually see backupHandle if linked.
     tryAutoReconnectBackup().then(tryAutoReconnect);
   } else {
-    setFileLinkState(t('file_manual_mode'), fallbackPopoverHtml());
+    setFileLinkStatus('manual');
     (async () => {
       const stored = await idbGetAppData();
       if(stored) appData = normalize(stored); else loadLegacyDraftFromLocalStorage();
