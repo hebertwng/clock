@@ -100,7 +100,7 @@
     flex-wrap:wrap;text-align:center}
   .sync-warning button{min-height:30px;padding:4px 12px;font-size:12px;background:#fff;border-color:transparent}
 
-  .corner-top-right{position:fixed;top:16px;right:16px;z-index:75}
+  .corner-top-right{position:fixed;top:16px;right:16px;z-index:75;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
   #btnThemeToggle.to-light{background:#ffffff;color:#1c1f26;border-color:#dde1e8}
   #btnThemeToggle.to-light:hover{border-color:#2f6fed}
   #btnThemeToggle.to-dark{background:#171a21;color:#e7e9ee;border-color:#2a2f3a}
@@ -271,17 +271,18 @@
 <body>
 
 <div class="sync-warning" id="syncWarning">
-  <span>O arquivo vinculado foi alterado por fora do CLOCK (outra aba, outro computador ou outro programa).</span>
-  <button id="btnSyncReload">Recarregar do arquivo</button>
-  <button id="btnSyncDismiss">Ignorar</button>
+  <span data-i18n="sync_warning_text">O arquivo vinculado foi alterado por fora do CLOCK (outra aba, outro computador ou outro programa).</span>
+  <button id="btnSyncReload" data-i18n="btn_reload_from_file">Recarregar do arquivo</button>
+  <button id="btnSyncDismiss" data-i18n="btn_ignore">Ignorar</button>
 </div>
 
 <div class="corner-top-right">
-  <button class="cal-toggle" id="btnThemeToggle" title="Alternar tema">🖥️ Tema</button>
+  <button class="cal-toggle" id="btnLangToggle" title="Idioma / Language">🌐 PT</button>
+  <button class="cal-toggle" id="btnThemeToggle" data-i18n-title="title_toggle_theme" title="Alternar tema">🖥️ Tema</button>
 </div>
 
 <div class="brand">CLOCK</div>
-<div class="brand-icon brand-icon-btn" id="brandIconBtn" role="button" tabindex="0" title="Atualizar a página">
+<div class="brand-icon brand-icon-btn" id="brandIconBtn" role="button" tabindex="0" data-i18n-title="title_refresh_page" title="Atualizar a página">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="12" cy="12" r="9.5"/>
     <line x1="12" y1="2.7" x2="12" y2="4"/>
@@ -295,26 +296,26 @@
 <div class="top-bar">
   <div class="left-controls" id="mainLeftControls">
     <div class="cal-wrap" id="calWrap">
-      <button class="cal-toggle" id="calToggleBtn">📅 Calendário</button>
+      <button class="cal-toggle" id="calToggleBtn" data-i18n="btn_calendar">📅 Calendário</button>
       <div class="cal-popover" id="calPopover">
         <div class="cal-header">
           <button id="calPrev">‹</button>
           <span class="cal-month-label" id="calMonthLabel"></span>
           <button id="calNext">›</button>
-          <button id="calToday">Hoje</button>
+          <button id="calToday" data-i18n="btn_today">Hoje</button>
           <button id="calToggleAll">Ver todos os dias</button>
         </div>
-        <div class="cal-weekdays"><span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span></div>
+        <div class="cal-weekdays"><span data-i18n="weekday_sun">Dom</span><span data-i18n="weekday_mon">Seg</span><span data-i18n="weekday_tue">Ter</span><span data-i18n="weekday_wed">Qua</span><span data-i18n="weekday_thu">Qui</span><span data-i18n="weekday_fri">Sex</span><span data-i18n="weekday_sat">Sáb</span></div>
         <div class="cal-grid" id="calGrid"></div>
       </div>
     </div>
     <button class="cal-toggle" id="btnDashboard">📊 Dashboard</button>
   </div>
   <div class="search-wrap">
-    <input type="text" id="searchInput" placeholder="🔎 Buscar atividade...">
-    <button class="search-clear-btn" id="btnSearchClear" style="display:none" title="Limpar busca" aria-label="Limpar busca">✕</button>
+    <input type="text" id="searchInput" data-i18n-placeholder="search_placeholder" placeholder="🔎 Buscar atividade...">
+    <button class="search-clear-btn" id="btnSearchClear" style="display:none" data-i18n-title="title_clear_search" data-i18n-aria="title_clear_search" title="Limpar busca" aria-label="Limpar busca">✕</button>
   </div>
-  <button class="primary" id="btnNewActivity">+ Nova atividade</button>
+  <button class="primary" id="btnNewActivity" data-i18n="btn_new_activity">+ Nova atividade</button>
 </div>
 <hr class="divider">
 
@@ -324,41 +325,41 @@
 
 <div class="modal-overlay" id="newActivityModal" style="display:none">
   <div class="modal-box">
-    <h2 id="modalTitle">Nova atividade</h2>
-    <label for="actName">Identificação (até 50 caracteres)</label>
-    <input type="text" id="actName" maxlength="50" placeholder="Ex: Ajuste no relatório X">
+    <h2 id="modalTitle" data-i18n="modal_title_new">Nova atividade</h2>
+    <label for="actName" data-i18n="label_name">Identificação (até 50 caracteres)</label>
+    <input type="text" id="actName" maxlength="50" data-i18n-placeholder="placeholder_name" placeholder="Ex: Ajuste no relatório X">
     <div class="counter" id="actNameCounter">0 / 50</div>
 
     <div id="backfillFields" style="display:none">
-      <div class="meta-line" style="margin:2px 0 8px">Registrando atividade para o dia selecionado no calendário.</div>
-      <label for="actDescModal">Descrição (até 500 caracteres)</label>
-      <textarea id="actDescModal" maxlength="500" placeholder="Descreva o que foi feito..."></textarea>
+      <div class="meta-line" style="margin:2px 0 8px" data-i18n="backfill_notice">Registrando atividade para o dia selecionado no calendário.</div>
+      <label for="actDescModal" data-i18n="label_description">Descrição (até 500 caracteres)</label>
+      <textarea id="actDescModal" maxlength="500" data-i18n-placeholder="placeholder_description" placeholder="Descreva o que foi feito..."></textarea>
       <div class="counter" id="actDescModalCounter">0 / 500</div>
-      <label for="actTimeModal">Tempo trabalhado (HH:MM:SS)</label>
+      <label for="actTimeModal" data-i18n="label_time_worked">Tempo trabalhado (HH:MM:SS)</label>
       <input type="text" id="actTimeModal" placeholder="00:00:00">
-      <div class="meta-line" style="margin:10px 0 2px">Ou, se preferir, informe o horário real de início e fim (tem prioridade sobre o tempo acima):</div>
+      <div class="meta-line" style="margin:10px 0 2px" data-i18n="backfill_or_times">Ou, se preferir, informe o horário real de início e fim (tem prioridade sobre o tempo acima):</div>
       <div class="date-edit-row">
         <div style="flex:1 1 100px">
-          <label for="actStartModal" style="margin:4px 0 2px">Início</label>
+          <label for="actStartModal" style="margin:4px 0 2px" data-i18n="label_start">Início</label>
           <input type="time" id="actStartModal">
         </div>
         <div style="flex:1 1 100px">
-          <label for="actEndModal" style="margin:4px 0 2px">Fim</label>
+          <label for="actEndModal" style="margin:4px 0 2px" data-i18n="label_end">Fim</label>
           <input type="time" id="actEndModal">
         </div>
       </div>
     </div>
 
     <div class="modal-actions">
-      <button id="btnCancelActivity">Cancelar</button>
-      <button class="primary" id="btnAddActivity">Criar atividade</button>
+      <button id="btnCancelActivity" data-i18n="btn_cancel">Cancelar</button>
+      <button class="primary" id="btnAddActivity" data-i18n="btn_create_activity">Criar atividade</button>
     </div>
   </div>
 </div>
 
 <div class="dashboard-screen" id="dashboardModal" style="display:none">
   <div class="brand">CLOCK</div>
-  <div class="brand-icon brand-icon-btn" id="brandIconBtnDash" role="button" tabindex="0" title="Atualizar a página">
+  <div class="brand-icon brand-icon-btn" id="brandIconBtnDash" role="button" tabindex="0" data-i18n-title="title_refresh_page" title="Atualizar a página">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="9.5"/>
       <line x1="12" y1="2.7" x2="12" y2="4"/>
@@ -370,37 +371,37 @@
   </div>
   <div class="top-bar">
     <div class="left-controls" id="dashLeftControls">
-      <button class="cal-toggle" id="btnBackToActivities">📋 Atividades</button>
+      <button class="cal-toggle" id="btnBackToActivities" data-i18n="btn_activities">📋 Atividades</button>
     </div>
-    <button class="primary" id="btnNewActivityDash">+ Nova atividade</button>
+    <button class="primary" id="btnNewActivityDash" data-i18n="btn_new_activity">+ Nova atividade</button>
   </div>
   <hr class="divider">
   <div class="dashboard-content">
     <div class="dash-controls">
-      <button data-range="7">7 dias</button>
-      <button data-range="14">14 dias</button>
-      <button data-range="30">30 dias</button>
-      <button id="btnDashTableToggle">Ver como tabela</button>
-      <button id="btnExportCsv">⬇ Exportar CSV</button>
-      <button id="btnPrintReport">🖨 Imprimir</button>
+      <button data-range="7" data-i18n="range_7d">7 dias</button>
+      <button data-range="14" data-i18n="range_14d">14 dias</button>
+      <button data-range="30" data-i18n="range_30d">30 dias</button>
+      <button id="btnDashTableToggle" data-i18n="btn_view_as_table">Ver como tabela</button>
+      <button id="btnExportCsv" data-i18n="btn_export_csv">⬇ Exportar CSV</button>
+      <button id="btnPrintReport" data-i18n="btn_print">🖨 Imprimir</button>
     </div>
     <div id="dashCharts">
       <div class="dash-section">
-        <div class="dash-title">Atividades por dia <span style="text-transform:none;letter-spacing:0;font-weight:400">— hoje em destaque</span></div>
+        <div class="dash-title"><span data-i18n="dash_activities_per_day">Atividades por dia</span> <span style="text-transform:none;letter-spacing:0;font-weight:400" data-i18n="dash_today_highlight">— hoje em destaque</span></div>
         <div class="chart-wrap" id="chartCountWrap">
           <div id="chartCount"></div>
           <div class="chart-tooltip" id="chartCountTooltip"></div>
         </div>
       </div>
       <div class="dash-section">
-        <div class="dash-title">Horas por dia <span style="text-transform:none;letter-spacing:0;font-weight:400">— hoje em destaque</span></div>
+        <div class="dash-title"><span data-i18n="dash_hours_per_day">Horas por dia</span> <span style="text-transform:none;letter-spacing:0;font-weight:400" data-i18n="dash_today_highlight">— hoje em destaque</span></div>
         <div class="chart-wrap" id="chartHoursWrap">
           <div id="chartHours"></div>
           <div class="chart-tooltip" id="chartHoursTooltip"></div>
         </div>
       </div>
       <div class="dash-section">
-        <div class="dash-title" id="breakdownTitle">Horas por atividade no período</div>
+        <div class="dash-title" id="breakdownTitle" data-i18n="breakdown_title_period">Horas por atividade no período</div>
         <div id="chartBreakdown"></div>
       </div>
     </div>
@@ -413,13 +414,13 @@
 <div class="corner-left" id="fileCorner">
   <div class="corner-left-row">
     <a class="linklike" id="fileLinkToggle">📁 Vincular arquivo</a>
-    <button class="save-all-btn" id="btnSaveAll" title="Salvar tudo no arquivo" aria-label="Salvar tudo no arquivo">💾</button>
+    <button class="save-all-btn" id="btnSaveAll" data-i18n-title="btn_save_all_title" data-i18n-aria="btn_save_all_title" title="Salvar tudo no arquivo" aria-label="Salvar tudo no arquivo">💾</button>
   </div>
   <div class="file-popover" id="filePopover"></div>
 </div>
 
 <div class="corner-right" id="hoursCorner">
-  <button class="corner-playpause-btn" id="btnFooterPlayPause" aria-label="Pausar ou retomar atividade">⏯</button>
+  <button class="corner-playpause-btn" id="btnFooterPlayPause" data-i18n-aria="aria_playpause" aria-label="Pausar ou retomar atividade">⏯</button>
   <div class="corner-time-wrap">
     <div class="corner-time" id="footerTime">00:00:00</div>
     <div class="corner-sub" id="footerActivities">0 atividades hoje</div>
@@ -439,6 +440,264 @@
   const BACKUP_HANDLE_KEY = 'backupFileHandle';
   const DRAFT_KEY = 'clock-data-draft'; // legacy localStorage key, read once for migration only
   const THEME_KEY = 'clock-theme';
+  const LANG_KEY = 'clock-lang';
+  const LOCALE_MAP = { 'pt-BR': 'pt-BR', 'en': 'en-US' };
+
+  const I18N = {
+    'pt-BR': {
+      sync_warning_text: 'O arquivo vinculado foi alterado por fora do CLOCK (outra aba, outro computador ou outro programa).',
+      btn_reload_from_file: 'Recarregar do arquivo',
+      btn_ignore: 'Ignorar',
+      title_toggle_theme: 'Alternar tema',
+      theme_dark: '🌙 Escuro',
+      theme_light: '☀️ Claro',
+      theme_system: '🖥️ Tema',
+      title_refresh_page: 'Atualizar a página',
+      btn_calendar: '📅 Calendário',
+      btn_today: 'Hoje',
+      btn_view_all_days: 'Ver todos os dias',
+      btn_view_by_day: 'Ver por dia',
+      weekday_sun: 'Dom', weekday_mon: 'Seg', weekday_tue: 'Ter', weekday_wed: 'Qua',
+      weekday_thu: 'Qui', weekday_fri: 'Sex', weekday_sat: 'Sáb',
+      search_placeholder: '🔎 Buscar atividade...',
+      title_clear_search: 'Limpar busca',
+      btn_new_activity: '+ Nova atividade',
+      modal_title_new: 'Nova atividade',
+      modal_title_backfill: 'Nova atividade — {day}',
+      label_name: 'Identificação (até 50 caracteres)',
+      placeholder_name: 'Ex: Ajuste no relatório X',
+      backfill_notice: 'Registrando atividade para o dia selecionado no calendário.',
+      label_description: 'Descrição (até 500 caracteres)',
+      placeholder_description: 'Descreva o que foi feito...',
+      placeholder_desc_card: 'Descreva o que está sendo feito...',
+      label_time_worked: 'Tempo trabalhado (HH:MM:SS)',
+      backfill_or_times: 'Ou, se preferir, informe o horário real de início e fim (tem prioridade sobre o tempo acima):',
+      label_start: 'Início',
+      label_end: 'Fim',
+      btn_cancel: 'Cancelar',
+      btn_create_activity: 'Criar atividade',
+      btn_activities: '📋 Atividades',
+      range_7d: '7 dias', range_14d: '14 dias', range_30d: '30 dias',
+      btn_view_as_table: 'Ver como tabela',
+      btn_view_as_chart: 'Ver como gráfico',
+      btn_export_csv: '⬇ Exportar CSV',
+      btn_print: '🖨 Imprimir',
+      dash_activities_per_day: 'Atividades por dia',
+      dash_hours_per_day: 'Horas por dia',
+      dash_today_highlight: '— hoje em destaque',
+      breakdown_title_period: 'Horas por atividade no período',
+      breakdown_title_base: 'Horas por atividade',
+      btn_save_all_title: 'Salvar tudo no arquivo',
+      btn_save_all_title_at: 'Salvar tudo no arquivo — salvo às {time}',
+      aria_playpause: 'Pausar ou retomar atividade',
+      today_suffix: ' (hoje)',
+      timer_title_running: 'Clique para copiar o tempo',
+      timer_title_editable: 'Clique para copiar · duplo clique para editar',
+      btn_pause: '⏸ Pausar',
+      btn_start: '▶ Iniciar',
+      title_cant_start_completed: 'Desmarque a atividade como concluída para poder iniciar o cronômetro',
+      btn_save: 'Salvar',
+      title_mark_completed: 'Marcar como concluída',
+      aria_mark_completed: 'Marcar atividade como concluída',
+      title_drag_reorder: 'Arraste para reordenar',
+      title_delete_activity: 'Excluir atividade',
+      title_copy_desc: 'Copiar descrição',
+      meta_created_at: 'criada em',
+      title_change_date: 'Clique para alterar a data',
+      title_goto_prior_day: 'Ir para o card do dia anterior',
+      chain_prior_text: '{hours} em dias anteriores',
+      empty_search_result: 'Nenhuma atividade encontrada para "{query}".',
+      empty_no_activities: 'Nenhuma atividade criada ainda. Use o botão "+ Nova atividade" para começar.',
+      empty_day: 'Nenhuma atividade registrada neste dia.',
+      title_prev_day: 'Dia anterior',
+      title_next_day: 'Próximo dia',
+      day_total_label: 'Total do dia: {duration}',
+      btn_load_more_days: 'Carregar mais {n} dias',
+      footer_activity_one: '{n} atividade hoje',
+      footer_activity_many: '{n} atividades hoje',
+      title_pause_shortcut: 'Pausar "{name}" (atalho: Espaço)',
+      title_resume_shortcut: 'Retomar "{name}" (atalho: Espaço)',
+      title_nothing_to_resume: 'Nenhuma atividade para retomar',
+      col_date: 'Data', col_activities: 'Atividades', col_hours: 'Horas',
+      col_activity: 'Atividade', col_description: 'Descrição',
+      col_hours_hms: 'Horas (HH:MM:SS)', col_hours_decimal: 'Horas (decimal)',
+      aria_chart_count: 'Quantidade de atividades por dia',
+      aria_chart_hours: 'Horas trabalhadas por dia',
+      tooltip_count_one: '{day}: {n} atividade',
+      tooltip_count_many: '{day}: {n} atividades',
+      title_view_full_period: 'Ver período completo',
+      empty_breakdown_day: 'Sem dados neste dia.',
+      empty_breakdown_period: 'Sem dados no período.',
+      breakdown_more_one: '+ {n} outra atividade: {hours}',
+      breakdown_more_many: '+ {n} outras atividades: {hours}',
+      activity_no_name: '(sem nome)',
+      csv_filename_prefix: 'clock-relatorio-',
+      print_title: 'CLOCK — Relatório de atividades',
+      print_period_total: 'Período: últimos {n} dias · Total: {total}',
+      file_link: 'Vincular arquivo',
+      file_manual_mode: 'Modo exportação manual',
+      file_perm_denied: 'Permissão negada',
+      file_click_reconnect: 'Clique para reconectar',
+      btn_open_existing: 'Abrir arquivo existente',
+      btn_create_new_file: 'Criar novo arquivo',
+      btn_open_another: 'Abrir outro arquivo',
+      btn_change_backup: 'Trocar backup ({name})',
+      btn_link_backup: 'Vincular arquivo de backup',
+      btn_reconnect: 'Reconectar',
+      btn_export_json: 'Exportar JSON',
+      btn_import_json: 'Importar JSON',
+      alert_invalid_json: 'Arquivo JSON inválido.',
+      confirm_corrupted_file: 'O arquivo "{file}" parece corrompido ou ilegível.\n\nClique OK para recuperar os dados do backup vinculado ("{backup}").\nClique Cancelar para iniciar vazio (risco de perder os dados do arquivo principal).',
+      alert_recovered_backup: 'Dados recuperados do arquivo de backup. Confira as atividades antes de continuar.',
+      alert_backup_also_corrupted: 'O arquivo de backup também está corrompido ou ilegível. Nenhum dado pôde ser recuperado automaticamente.',
+      alert_corrupted_no_backup: 'O arquivo "{file}" parece corrompido ou ilegível, e nenhum backup está vinculado. Iniciando vazio.',
+      confirm_file_diff_content: 'O arquivo "{file}" tem conteúdo diferente das informações atuais na tela, que ainda não foram gravadas nele.\n\nClique OK para GRAVAR as informações atuais neste arquivo (substituindo o conteúdo dele).\nClique Cancelar para DESCARTAR as informações atuais e abrir o conteúdo do arquivo.',
+      confirm_seed_diff_content: 'O arquivo "{file}" vinculado tem conteúdo diferente dos dados locais recém-migrados.\n\nClique OK para manter os dados locais (serão gravados no arquivo).\nClique Cancelar para usar o conteúdo do arquivo.',
+      confirm_external_change: 'O conteúdo do arquivo no disco é diferente do que está na tela.\n\nClique OK para GRAVAR as informações atuais da tela no arquivo (substituindo o que foi alterado por fora).\nClique Cancelar para DESCARTAR as informações da tela e usar o conteúdo do arquivo.',
+      confirm_delete_activity: 'Excluir a atividade "{name}"? Esta ação não pode ser desfeita.'
+    },
+    'en': {
+      sync_warning_text: 'The linked file was changed outside of CLOCK (another tab, another computer, or another program).',
+      btn_reload_from_file: 'Reload from file',
+      btn_ignore: 'Ignore',
+      title_toggle_theme: 'Toggle theme',
+      theme_dark: '🌙 Dark',
+      theme_light: '☀️ Light',
+      theme_system: '🖥️ Theme',
+      title_refresh_page: 'Refresh the page',
+      btn_calendar: '📅 Calendar',
+      btn_today: 'Today',
+      btn_view_all_days: 'View all days',
+      btn_view_by_day: 'View by day',
+      weekday_sun: 'Sun', weekday_mon: 'Mon', weekday_tue: 'Tue', weekday_wed: 'Wed',
+      weekday_thu: 'Thu', weekday_fri: 'Fri', weekday_sat: 'Sat',
+      search_placeholder: '🔎 Search activity...',
+      title_clear_search: 'Clear search',
+      btn_new_activity: '+ New activity',
+      modal_title_new: 'New activity',
+      modal_title_backfill: 'New activity — {day}',
+      label_name: 'Name (up to 50 characters)',
+      placeholder_name: 'E.g.: Fix in report X',
+      backfill_notice: 'Logging an activity for the day selected on the calendar.',
+      label_description: 'Description (up to 500 characters)',
+      placeholder_description: 'Describe what was done...',
+      placeholder_desc_card: 'Describe what is being done...',
+      label_time_worked: 'Time worked (HH:MM:SS)',
+      backfill_or_times: "Or, if you prefer, enter the actual start and end time (takes priority over the time above):",
+      label_start: 'Start',
+      label_end: 'End',
+      btn_cancel: 'Cancel',
+      btn_create_activity: 'Create activity',
+      btn_activities: '📋 Activities',
+      range_7d: '7 days', range_14d: '14 days', range_30d: '30 days',
+      btn_view_as_table: 'View as table',
+      btn_view_as_chart: 'View as chart',
+      btn_export_csv: '⬇ Export CSV',
+      btn_print: '🖨 Print',
+      dash_activities_per_day: 'Activities per day',
+      dash_hours_per_day: 'Hours per day',
+      dash_today_highlight: '— today highlighted',
+      breakdown_title_period: 'Hours by activity in the period',
+      breakdown_title_base: 'Hours by activity',
+      btn_save_all_title: 'Save everything to file',
+      btn_save_all_title_at: 'Save everything to file — saved at {time}',
+      aria_playpause: 'Pause or resume activity',
+      today_suffix: ' (today)',
+      timer_title_running: 'Click to copy the time',
+      timer_title_editable: 'Click to copy · double-click to edit',
+      btn_pause: '⏸ Pause',
+      btn_start: '▶ Start',
+      title_cant_start_completed: 'Uncheck the activity as completed to start the timer',
+      btn_save: 'Save',
+      title_mark_completed: 'Mark as completed',
+      aria_mark_completed: 'Mark activity as completed',
+      title_drag_reorder: 'Drag to reorder',
+      title_delete_activity: 'Delete activity',
+      title_copy_desc: 'Copy description',
+      meta_created_at: 'created on',
+      title_change_date: 'Click to change the date',
+      title_goto_prior_day: "Go to the previous day's card",
+      chain_prior_text: '{hours} on previous days',
+      empty_search_result: 'No activity found for "{query}".',
+      empty_no_activities: 'No activity created yet. Use the "+ New activity" button to get started.',
+      empty_day: 'No activity logged on this day.',
+      title_prev_day: 'Previous day',
+      title_next_day: 'Next day',
+      day_total_label: 'Day total: {duration}',
+      btn_load_more_days: 'Load {n} more days',
+      footer_activity_one: '{n} activity today',
+      footer_activity_many: '{n} activities today',
+      title_pause_shortcut: 'Pause "{name}" (shortcut: Space)',
+      title_resume_shortcut: 'Resume "{name}" (shortcut: Space)',
+      title_nothing_to_resume: 'No activity to resume',
+      col_date: 'Date', col_activities: 'Activities', col_hours: 'Hours',
+      col_activity: 'Activity', col_description: 'Description',
+      col_hours_hms: 'Hours (HH:MM:SS)', col_hours_decimal: 'Hours (decimal)',
+      aria_chart_count: 'Number of activities per day',
+      aria_chart_hours: 'Hours worked per day',
+      tooltip_count_one: '{day}: {n} activity',
+      tooltip_count_many: '{day}: {n} activities',
+      title_view_full_period: 'View full period',
+      empty_breakdown_day: 'No data for this day.',
+      empty_breakdown_period: 'No data for this period.',
+      breakdown_more_one: '+ {n} other activity: {hours}',
+      breakdown_more_many: '+ {n} other activities: {hours}',
+      activity_no_name: '(no name)',
+      csv_filename_prefix: 'clock-report-',
+      print_title: 'CLOCK — Activity report',
+      print_period_total: 'Period: last {n} days · Total: {total}',
+      file_link: 'Link file',
+      file_manual_mode: 'Manual export mode',
+      file_perm_denied: 'Permission denied',
+      file_click_reconnect: 'Click to reconnect',
+      btn_open_existing: 'Open existing file',
+      btn_create_new_file: 'Create new file',
+      btn_open_another: 'Open another file',
+      btn_change_backup: 'Change backup ({name})',
+      btn_link_backup: 'Link backup file',
+      btn_reconnect: 'Reconnect',
+      btn_export_json: 'Export JSON',
+      btn_import_json: 'Import JSON',
+      alert_invalid_json: 'Invalid JSON file.',
+      confirm_corrupted_file: 'The file "{file}" appears to be corrupted or unreadable.\n\nClick OK to recover the data from the linked backup ("{backup}").\nClick Cancel to start empty (risk of losing the main file\'s data).',
+      alert_recovered_backup: 'Data recovered from the backup file. Check the activities before continuing.',
+      alert_backup_also_corrupted: 'The backup file is also corrupted or unreadable. No data could be recovered automatically.',
+      alert_corrupted_no_backup: 'The file "{file}" appears to be corrupted or unreadable, and no backup is linked. Starting empty.',
+      confirm_file_diff_content: 'The file "{file}" has different content from what\'s currently on screen, which hasn\'t been saved to it yet.\n\nClick OK to SAVE the current on-screen data to this file (overwriting its content).\nClick Cancel to DISCARD the current data and open the file\'s content instead.',
+      confirm_seed_diff_content: 'The linked file "{file}" has different content from the recently migrated local data.\n\nClick OK to keep the local data (it will be saved to the file).\nClick Cancel to use the file\'s content instead.',
+      confirm_external_change: "The file's content on disk is different from what's on screen.\n\nClick OK to SAVE the current on-screen data to the file (overwriting the outside change).\nClick Cancel to DISCARD the on-screen data and use the file's content instead.",
+      confirm_delete_activity: 'Delete the activity "{name}"? This action cannot be undone.'
+    }
+  };
+
+  let currentLang = (function(){
+    try{
+      const stored = localStorage.getItem(LANG_KEY);
+      if(stored && I18N[stored]) return stored;
+    }catch(e){}
+    return 'pt-BR';
+  })();
+
+  function t(key, vars){
+    const dict = I18N[currentLang] || I18N['pt-BR'];
+    let str = dict[key] != null ? dict[key] : (I18N['pt-BR'][key] != null ? I18N['pt-BR'][key] : key);
+    if(vars) Object.keys(vars).forEach(k => { str = str.split('{'+k+'}').join(vars[k]); });
+    return str;
+  }
+  function tCount(oneKey, manyKey, n, vars){
+    return t(n === 1 ? oneKey : manyKey, Object.assign({ n }, vars||{}));
+  }
+  function currentLocale(){ return LOCALE_MAP[currentLang] || 'pt-BR'; }
+
+  function applyStaticTranslations(){
+    document.documentElement.lang = currentLang;
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.getAttribute('data-i18n-title')); });
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria'))); });
+    const langBtn = document.getElementById('btnLangToggle');
+    if(langBtn) langBtn.textContent = currentLang === 'en' ? '🌐 EN' : '🌐 PT';
+  }
 
   let appData = { activities: [], lastCarryOverDate: null };
   let fileHandle = null;
@@ -488,8 +747,8 @@
   function formatDayLabel(key){
     const [y,m,d] = key.split('-').map(Number);
     const date = new Date(y, m-1, d);
-    let label = date.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'2-digit', year:'numeric' });
-    if(key === dayKey(new Date())) label += ' (hoje)';
+    let label = date.toLocaleDateString(currentLocale(), { weekday:'long', day:'2-digit', month:'2-digit', year:'numeric' });
+    if(key === dayKey(new Date())) label += t('today_suffix');
     return label;
   }
   function activityMatchesSearch(a, query){
@@ -498,7 +757,7 @@
     const dk = dayKey(a.createdAt);
     if(dk.toLowerCase().includes(query)) return true;
     if(formatDayLabel(dk).toLowerCase().includes(query)) return true;
-    const shortDate = new Date(a.createdAt).toLocaleDateString('pt-BR');
+    const shortDate = new Date(a.createdAt).toLocaleDateString(currentLocale());
     if(shortDate.toLowerCase().includes(query)) return true;
     return false;
   }
@@ -593,20 +852,20 @@
     bindFilePopoverEvents();
   }
   function backupButtonHtml(){
-    return '<button id="btnLinkBackup">'+(backupHandle ? '📦 Trocar backup ('+escapeHtml(backupHandle.name)+')' : '📦 Vincular arquivo de backup')+'</button>';
+    return '<button id="btnLinkBackup">'+(backupHandle ? '📦 '+t('btn_change_backup',{name:escapeHtml(backupHandle.name)}) : '📦 '+t('btn_link_backup'))+'</button>';
   }
   function notConnectedPopoverHtml(){
-    return '<button id="btnOpenFile">Abrir arquivo existente</button><button id="btnNewFile">Criar novo arquivo</button>';
+    return '<button id="btnOpenFile">'+t('btn_open_existing')+'</button><button id="btnNewFile">'+t('btn_create_new_file')+'</button>';
   }
   function connectedPopoverHtml(){
-    return '<button id="btnOpenFile">Abrir outro arquivo</button><button id="btnNewFile">Criar novo arquivo</button>'
+    return '<button id="btnOpenFile">'+t('btn_open_another')+'</button><button id="btnNewFile">'+t('btn_create_new_file')+'</button>'
       + backupButtonHtml();
   }
   function reconnectPopoverHtml(){
-    return '<button id="btnReconnect">Reconectar</button><button id="btnOpenFile">Abrir outro arquivo</button><button id="btnNewFile">Criar novo arquivo</button>';
+    return '<button id="btnReconnect">'+t('btn_reconnect')+'</button><button id="btnOpenFile">'+t('btn_open_another')+'</button><button id="btnNewFile">'+t('btn_create_new_file')+'</button>';
   }
   function fallbackPopoverHtml(){
-    return '<button id="btnExport">Exportar JSON</button><button id="btnImport">Importar JSON</button>'
+    return '<button id="btnExport">'+t('btn_export_json')+'</button><button id="btnImport">'+t('btn_import_json')+'</button>'
       + '<input type="file" id="fileImportInput" accept="application/json" style="display:none">';
   }
   function closeFilePopover(){
@@ -649,7 +908,7 @@
         saveData();
         render();
         closeFilePopover();
-      }catch(e){ alert('Arquivo JSON inválido.'); }
+      }catch(e){ alert(t('alert_invalid_json')); }
     };
   }
 
@@ -701,23 +960,19 @@
       console.error('JSON inválido no arquivo.', e);
       if(!allowRecovery) return { data:{ activities:[] }, recovered:false };
       if(backupHandle){
-        const tryBackup = confirm(
-          'O arquivo "'+handle.name+'" parece corrompido ou ilegível.\n\n'
-          + 'Clique OK para recuperar os dados do backup vinculado ("'+backupHandle.name+'").\n'
-          + 'Clique Cancelar para iniciar vazio (risco de perder os dados do arquivo principal).'
-        );
+        const tryBackup = confirm(t('confirm_corrupted_file', { file: handle.name, backup: backupHandle.name }));
         if(tryBackup){
           try{
             const backupData = await readFileHandleRaw(backupHandle);
-            alert('Dados recuperados do arquivo de backup. Confira as atividades antes de continuar.');
+            alert(t('alert_recovered_backup'));
             return { data: backupData, recovered:true };
           }catch(e2){
-            alert('O arquivo de backup também está corrompido ou ilegível. Nenhum dado pôde ser recuperado automaticamente.');
+            alert(t('alert_backup_also_corrupted'));
             return { data:{ activities:[] }, recovered:false };
           }
         }
       } else {
-        alert('O arquivo "'+handle.name+'" parece corrompido ou ilegível, e nenhum backup está vinculado. Iniciando vazio.');
+        alert(t('alert_corrupted_no_backup', { file: handle.name }));
       }
       return { data:{ activities:[] }, recovered:false };
     }
@@ -726,7 +981,7 @@
   async function connectHandle(handle, { isNew=false } = {}){
     const perm = await handle.requestPermission({ mode:'readwrite' });
     if(perm !== 'granted'){
-      setFileLinkState('Permissão negada', notConnectedPopoverHtml());
+      setFileLinkState(t('file_perm_denied'), notConnectedPopoverHtml());
       return false;
     }
     fileHandle = handle;
@@ -736,11 +991,7 @@
     } else {
       const { data: fileData } = await readFileHandle(handle);
       if(appData.activities.length > 0 && !dataEquivalent(fileData, appData)){
-        const keepLocal = confirm(
-          'O arquivo "'+handle.name+'" tem conteúdo diferente das informações atuais na tela, que ainda não foram gravadas nele.\n\n'
-          + 'Clique OK para GRAVAR as informações atuais neste arquivo (substituindo o conteúdo dele).\n'
-          + 'Clique Cancelar para DESCARTAR as informações atuais e abrir o conteúdo do arquivo.'
-        );
+        const keepLocal = confirm(t('confirm_file_diff_content', { file: handle.name }));
         if(keepLocal){
           await saveData();
         } else {
@@ -822,9 +1073,9 @@
   function updateLastSavedLabel(){
     const btn = document.getElementById('btnSaveAll');
     if(!btn) return;
-    if(!lastSavedAt){ btn.title = 'Salvar tudo no arquivo'; return; }
+    if(!lastSavedAt){ btn.title = t('btn_save_all_title'); return; }
     const d = new Date(lastSavedAt);
-    btn.title = 'Salvar tudo no arquivo — salvo às ' + pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+    btn.title = t('btn_save_all_title_at', { time: pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds()) });
   }
 
   async function checkForExternalChanges(){
@@ -862,11 +1113,7 @@
             // fresh profile reconnecting to a file that already has data. Import it once.
             const { data } = await readFileHandle(handle);
             if(appData.activities.length > 0 && !dataEquivalent(data, appData)){
-              const keepLocal = confirm(
-                'O arquivo "'+handle.name+'" vinculado tem conteúdo diferente dos dados locais recém-migrados.\n\n'
-                + 'Clique OK para manter os dados locais (serão gravados no arquivo).\n'
-                + 'Clique Cancelar para usar o conteúdo do arquivo.'
-              );
+              const keepLocal = confirm(t('confirm_seed_diff_content', { file: handle.name }));
               if(!keepLocal) appData = data;
             } else {
               appData = data;
@@ -875,7 +1122,7 @@
           }
           setFileLinkState(handle.name + ' ✓', connectedPopoverHtml());
         } else {
-          setFileLinkState('Clique para reconectar', reconnectPopoverHtml());
+          setFileLinkState(t('file_click_reconnect'), reconnectPopoverHtml());
         }
       }catch(e){ /* keep whatever was loaded from IndexedDB/legacy draft above */ }
     }
@@ -1025,7 +1272,7 @@
   function deleteActivity(id){
     const activity = appData.activities.find(a => a.id === id);
     if(!activity) return;
-    if(!confirm('Excluir a atividade "'+activity.name+'"? Esta ação não pode ser desfeita.')) return;
+    if(!confirm(t('confirm_delete_activity', { name: activity.name }))) return;
     appData.activities = appData.activities.filter(a => a.id !== id);
     saveData();
     render();
@@ -1215,7 +1462,7 @@
     const title = document.getElementById('modalTitle');
     if(isBackfillMode()){
       backfillWrap.style.display = 'block';
-      title.textContent = 'Nova atividade — ' + formatDayLabel(dayKey(selectedDate));
+      title.textContent = t('modal_title_backfill', { day: formatDayLabel(dayKey(selectedDate)) });
       document.getElementById('actDescModal').value = '';
       document.getElementById('actTimeModal').value = '00:00:00';
       document.getElementById('actStartModal').value = '';
@@ -1223,7 +1470,7 @@
       updateDescModalCounter();
     } else {
       backfillWrap.style.display = 'none';
-      title.textContent = 'Nova atividade';
+      title.textContent = t('modal_title_new');
     }
 
     requestAnimationFrame(() => input.focus());
@@ -1250,7 +1497,7 @@
     const first = new Date(year, month, 1);
     const startWeekday = first.getDay();
     const daysInMonth = new Date(year, month+1, 0).getDate();
-    let monthLabel = calendarViewMonth.toLocaleDateString('pt-BR', { month:'long', year:'numeric' });
+    let monthLabel = calendarViewMonth.toLocaleDateString(currentLocale(), { month:'long', year:'numeric' });
     monthLabel = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
     document.getElementById('calMonthLabel').textContent = monthLabel;
 
@@ -1281,7 +1528,7 @@
       };
     });
 
-    document.getElementById('calToggleAll').textContent = showAllDays ? 'Ver por dia' : 'Ver todos os dias';
+    document.getElementById('calToggleAll').textContent = showAllDays ? t('btn_view_by_day') : t('btn_view_all_days');
   }
 
   function render(){
@@ -1308,9 +1555,9 @@
     }
 
     if(isSearching && groups.length === 0){
-      container.innerHTML = '<div class="empty">Nenhuma atividade encontrada para "'+escapeHtml(searchQuery)+'".</div>';
+      container.innerHTML = '<div class="empty">'+t('empty_search_result',{query:escapeHtml(searchQuery)})+'</div>';
     } else if(!isSearching && groups.length === 0 && !showAllDays){
-      container.innerHTML = '<div class="empty">Nenhuma atividade criada ainda. Use o botão "+ Nova atividade" para começar.</div>';
+      container.innerHTML = '<div class="empty">'+t('empty_no_activities')+'</div>';
     } else {
       container.innerHTML = groupsToShow.map(g => {
         const dayTotalMs = isSearching
@@ -1318,18 +1565,18 @@
           : getDayTotalMs(g.key, nowMs);
         const cardsHtml = g.items.length
           ? '<div class="activities-grid">' + g.items.map(a => activityCardHtml(a, nowMs)).join('') + '</div>'
-          : '<div class="empty">Nenhuma atividade registrada neste dia.</div>';
+          : '<div class="empty">'+t('empty_day')+'</div>';
         const navHtml = (showAllDays || isSearching) ? '' :
-          '<button class="day-nav-btn" data-day-nav-prev title="Dia anterior" aria-label="Dia anterior">‹</button>'
-          + '<button class="day-nav-btn" data-day-nav-next title="Próximo dia" aria-label="Próximo dia">›</button>';
+          '<button class="day-nav-btn" data-day-nav-prev title="'+t('title_prev_day')+'" aria-label="'+t('title_prev_day')+'">‹</button>'
+          + '<button class="day-nav-btn" data-day-nav-next title="'+t('title_next_day')+'" aria-label="'+t('title_next_day')+'">›</button>';
         return '<div class="day-group" data-day="'+g.key+'">'
           + '<div class="day-header"><span class="label-group">'+navHtml+'<span class="label">'+formatDayLabel(g.key)+'</span></span>'
-          + '<span class="total" data-day-total="'+g.key+'">Total do dia: '+formatDuration(dayTotalMs)+'</span>'
+          + '<span class="total" data-day-total="'+g.key+'">'+t('day_total_label',{duration:formatDuration(dayTotalMs)})+'</span>'
           + '</div>'
           + cardsHtml
           + '</div>';
       }).join('')
-        + (moreGroupsCount > 0 ? '<div class="load-more-wrap"><button id="btnLoadMoreDays">Carregar mais '+Math.min(moreGroupsCount,30)+' dias</button></div>' : '');
+        + (moreGroupsCount > 0 ? '<div class="load-more-wrap"><button id="btnLoadMoreDays">'+t('btn_load_more_days',{n:Math.min(moreGroupsCount,30)})+'</button></div>' : '');
     }
 
     bindActivityEvents();
@@ -1363,47 +1610,47 @@
     const timerHtml = isEditing
       ? '<input type="text" class="timer-edit-input" id="timerEditInput" value="'+formatDuration(elapsed)+'" placeholder="HH:MM:SS">'
       : '<div class="timer-row">'
-          + '<div class="timer'+(running?'':' editable')+'" data-timer="'+a.id+'" tabindex="0" role="button" title="'+(running?'Clique para copiar o tempo':'Clique para copiar · duplo clique para editar')+'">'+formatDuration(elapsed)+'</div>'
-          + '<button class="btn-toggle" data-toggle="'+a.id+'"'+(a.completed && !running ? ' disabled title="Desmarque a atividade como concluída para poder iniciar o cronômetro"' : '')+'>'+(running?'⏸ Pausar':'▶ Iniciar')+'</button>'
+          + '<div class="timer'+(running?'':' editable')+'" data-timer="'+a.id+'" tabindex="0" role="button" title="'+(running?t('timer_title_running'):t('timer_title_editable'))+'">'+formatDuration(elapsed)+'</div>'
+          + '<button class="btn-toggle" data-toggle="'+a.id+'"'+(a.completed && !running ? ' disabled title="'+t('title_cant_start_completed')+'"' : '')+'>'+(running?t('btn_pause'):t('btn_start'))+'</button>'
         + '</div>';
 
     const buttonsHtml = isEditing
-      ? '<div class="act-buttons"><button data-cancel-time="'+a.id+'">Cancelar</button><button class="primary" data-save-time="'+a.id+'">Salvar</button></div>'
+      ? '<div class="act-buttons"><button data-cancel-time="'+a.id+'">'+t('btn_cancel')+'</button><button class="primary" data-save-time="'+a.id+'">'+t('btn_save')+'</button></div>'
       : '';
 
     const dragHandleHtml = '<div class="card-header-row">'
-      +   '<label class="complete-check" title="Marcar como concluída">'
-      +     '<input type="checkbox" data-complete="'+a.id+'"'+(a.completed?' checked':'')+' aria-label="Marcar atividade como concluída">'
+      +   '<label class="complete-check" title="'+t('title_mark_completed')+'">'
+      +     '<input type="checkbox" data-complete="'+a.id+'"'+(a.completed?' checked':'')+' aria-label="'+t('aria_mark_completed')+'">'
       +   '</label>'
-      +   '<div class="drag-handle" data-drag-handle="'+a.id+'" title="Arraste para reordenar" aria-label="Arraste para reordenar">'
+      +   '<div class="drag-handle" data-drag-handle="'+a.id+'" title="'+t('title_drag_reorder')+'" aria-label="'+t('title_drag_reorder')+'">'
       +     '<svg viewBox="0 0 16 10" width="16" height="10" fill="currentColor">'
       +       '<circle cx="2" cy="2" r="1.3"/><circle cx="8" cy="2" r="1.3"/><circle cx="14" cy="2" r="1.3"/>'
       +       '<circle cx="2" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="14" cy="8" r="1.3"/>'
       +     '</svg>'
       +   '</div>'
-      +   '<button class="card-delete-btn" data-delete="'+a.id+'" title="Excluir atividade" aria-label="Excluir atividade">✕</button>'
+      +   '<button class="card-delete-btn" data-delete="'+a.id+'" title="'+t('title_delete_activity')+'" aria-label="'+t('title_delete_activity')+'">✕</button>'
       + '</div>';
 
     const isEditingDate = editingDateId === a.id;
     const metaLineHtml = isEditingDate
       ? '<div class="date-edit-row">'
           + '<input type="date" id="dateEditInput" value="'+dayKey(a.createdAt)+'">'
-          + '<button data-cancel-date="'+a.id+'">Cancelar</button>'
-          + '<button class="primary" data-save-date="'+a.id+'">Salvar</button>'
+          + '<button data-cancel-date="'+a.id+'">'+t('btn_cancel')+'</button>'
+          + '<button class="primary" data-save-date="'+a.id+'">'+t('btn_save')+'</button>'
         + '</div>'
-      : '<div class="meta-line">criada em <span class="act-date" data-edit-date="'+a.id+'" title="Clique para alterar a data">'+new Date(a.createdAt).toLocaleString('pt-BR')+'</span></div>';
+      : '<div class="meta-line">'+t('meta_created_at')+' <span class="act-date" data-edit-date="'+a.id+'" title="'+t('title_change_date')+'">'+new Date(a.createdAt).toLocaleString(currentLocale())+'</span></div>';
 
     const chainPriorMs = getChainPriorMs(a, nowMs);
     const chainPriorHtml = chainPriorMs > 0
-      ? '<div class="chain-prior-line"><span class="chain-prior-link" data-goto-activity="'+a.carriedFrom+'" role="button" tabindex="0" title="Ir para o card do dia anterior">⏱ '+formatHoursShort(chainPriorMs/3600000)+' em dias anteriores</span></div>'
+      ? '<div class="chain-prior-line"><span class="chain-prior-link" data-goto-activity="'+a.carriedFrom+'" role="button" tabindex="0" title="'+t('title_goto_prior_day')+'">⏱ '+t('chain_prior_text',{hours:formatHoursShort(chainPriorMs/3600000)})+'</span></div>'
       : '';
 
     return '<div class="activity-card'+(running?' running':'')+(a.completed?' completed':'')+'" data-id="'+a.id+'">'
       +   dragHandleHtml
       +   '<input type="text" class="act-name" data-id="'+a.id+'" maxlength="50" value="'+escapeHtml(a.name)+'">'
-      +   '<textarea class="act-desc" data-id="'+a.id+'" maxlength="500" placeholder="Descreva o que está sendo feito...">'+escapeHtml(a.description)+'</textarea>'
+      +   '<textarea class="act-desc" data-id="'+a.id+'" maxlength="500" placeholder="'+t('placeholder_desc_card')+'">'+escapeHtml(a.description)+'</textarea>'
       +   '<div class="desc-meta-row">'
-      +     '<button class="copy-desc-btn" data-copy-desc="'+a.id+'" title="Copiar descrição" aria-label="Copiar descrição">📋</button>'
+      +     '<button class="copy-desc-btn" data-copy-desc="'+a.id+'" title="'+t('title_copy_desc')+'" aria-label="'+t('title_copy_desc')+'">📋</button>'
       +     '<div class="counter" data-desc-counter="'+a.id+'">'+ (a.description||'').length +' / 500</div>'
       +   '</div>'
       +   metaLineHtml
@@ -1714,7 +1961,7 @@
     const todayActivities = appData.activities.filter(a => dayKey(a.createdAt) === todayKey);
     const totalMs = getDayTotalMs(todayKey, nowMs);
     document.getElementById('footerTime').textContent = formatDuration(totalMs);
-    document.getElementById('footerActivities').textContent = todayActivities.length + ' atividade' + (todayActivities.length===1?'':'s') + ' hoje';
+    document.getElementById('footerActivities').textContent = tCount('footer_activity_one', 'footer_activity_many', todayActivities.length);
     updateFooterPlayPauseButton();
   }
 
@@ -1728,13 +1975,13 @@
       btn.textContent = '⏸';
       btn.classList.add('is-running');
       btn.disabled = false;
-      btn.title = 'Pausar "'+running.name+'" (atalho: Espaço)';
+      btn.title = t('title_pause_shortcut', { name: running.name });
     } else {
       const last = getLastActiveActivity();
       btn.classList.remove('is-running');
       btn.textContent = '▶';
       btn.disabled = !last;
-      btn.title = last ? 'Retomar "'+last.name+'" (atalho: Espaço)' : 'Nenhuma atividade para retomar';
+      btn.title = last ? t('title_resume_shortcut', { name: last.name }) : t('title_nothing_to_resume');
     }
   }
 
@@ -1748,7 +1995,7 @@
     });
     document.querySelectorAll('[data-day-total]').forEach(el => {
       const key = el.getAttribute('data-day-total');
-      el.textContent = 'Total do dia: ' + formatDuration(getDayTotalMs(key, nowMs));
+      el.textContent = t('day_total_label', { duration: formatDuration(getDayTotalMs(key, nowMs)) });
     });
     updateFooter(nowMs);
     if(running){
@@ -1895,7 +2142,7 @@
   }
 
   function renderDashboardTable(series){
-    let html = '<table class="dash-table"><thead><tr><th>Data</th><th>Atividades</th><th>Horas</th></tr></thead><tbody>';
+    let html = '<table class="dash-table"><thead><tr><th>'+t('col_date')+'</th><th>'+t('col_activities')+'</th><th>'+t('col_hours')+'</th></tr></thead><tbody>';
     series.forEach(s => {
       html += '<tr><td>'+formatDayLabel(s.key)+'</td><td class="num">'+s.count+'</td><td class="num">'+formatHoursShort(s.hours)+'</td></tr>';
     });
@@ -1912,7 +2159,7 @@
 
     document.getElementById('dashCharts').style.display = dashboardTableView ? 'none' : 'block';
     document.getElementById('dashTableWrap').style.display = dashboardTableView ? 'block' : 'none';
-    document.getElementById('btnDashTableToggle').textContent = dashboardTableView ? 'Ver como gráfico' : 'Ver como tabela';
+    document.getElementById('btnDashTableToggle').textContent = dashboardTableView ? t('btn_view_as_chart') : t('btn_view_as_table');
 
     if(dashboardTableView){
       renderDashboardTable(series);
@@ -1920,15 +2167,15 @@
       renderBarChart('chartCount', 'chartCountTooltip', series, {
         getValue: s => s.count,
         tickFormat: v => String(Math.round(v)),
-        tooltipFormat: s => formatDayLabel(s.key) + ': ' + s.count + ' atividade' + (s.count===1?'':'s'),
-        ariaLabel: 'Quantidade de atividades por dia',
+        tooltipFormat: s => tCount('tooltip_count_one', 'tooltip_count_many', s.count, { day: formatDayLabel(s.key) }),
+        ariaLabel: t('aria_chart_count'),
         onBarClick: selectDashboardDay
       });
       renderBarChart('chartHours', 'chartHoursTooltip', series, {
         getValue: s => s.hours,
         tickFormat: v => (Math.round(v*10)/10) + 'h',
         tooltipFormat: s => formatDayLabel(s.key) + ': ' + formatHoursShort(s.hours),
-        ariaLabel: 'Horas trabalhadas por dia',
+        ariaLabel: t('aria_chart_hours'),
         onBarClick: selectDashboardDay
       });
     }
@@ -1954,7 +2201,7 @@
     for(const a of appData.activities){
       const createdMs = new Date(a.createdAt).getTime();
       if(createdMs < start || createdMs >= end) continue;
-      const name = a.name || '(sem nome)';
+      const name = a.name || t('activity_no_name');
       totals[name] = (totals[name] || 0) + getActivityElapsedMs(a, nowMs);
     }
     return Object.keys(totals).map(name => ({ name, ms: totals[name] })).sort((x,y) => y.ms - x.ms);
@@ -1965,7 +2212,7 @@
     const totals = {};
     for(const a of appData.activities){
       if(dayKey(a.createdAt) !== dayKeyStr) continue;
-      const name = a.name || '(sem nome)';
+      const name = a.name || t('activity_no_name');
       totals[name] = (totals[name] || 0) + getActivityElapsedMs(a, nowMs);
     }
     return Object.keys(totals).map(name => ({ name, ms: totals[name] })).sort((x,y) => y.ms - x.ms);
@@ -1976,8 +2223,8 @@
     const titleEl = document.getElementById('breakdownTitle');
     if(titleEl){
       titleEl.innerHTML = dashboardSelectedDay
-        ? 'Horas por atividade <span style="text-transform:none;letter-spacing:0;font-weight:400">— '+escapeHtml(formatDayLabel(dashboardSelectedDay))+'</span> <span class="breakdown-clear" id="btnClearDaySelect" role="button" tabindex="0" title="Ver período completo">✕</span>'
-        : 'Horas por atividade no período';
+        ? t('breakdown_title_base')+' <span style="text-transform:none;letter-spacing:0;font-weight:400">— '+escapeHtml(formatDayLabel(dashboardSelectedDay))+'</span> <span class="breakdown-clear" id="btnClearDaySelect" role="button" tabindex="0" title="'+t('title_view_full_period')+'">✕</span>'
+        : t('breakdown_title_period');
       const clearBtn = document.getElementById('btnClearDaySelect');
       if(clearBtn){
         clearBtn.onclick = () => { dashboardSelectedDay = null; renderDashboard(); };
@@ -1986,7 +2233,7 @@
     }
     const container = document.getElementById('chartBreakdown');
     if(!container) return;
-    if(data.length === 0){ container.innerHTML = '<div class="empty">Sem dados '+(dashboardSelectedDay?'neste dia':'no período')+'.</div>'; return; }
+    if(data.length === 0){ container.innerHTML = '<div class="empty">'+t(dashboardSelectedDay?'empty_breakdown_day':'empty_breakdown_period')+'</div>'; return; }
     const top = data.slice(0, 8);
     const rest = data.slice(8);
     const maxMs = Math.max(...top.map(d => d.ms), 1);
@@ -2000,7 +2247,7 @@
     }).join('');
     if(rest.length){
       const restMs = rest.reduce((s,d) => s+d.ms, 0);
-      html += '<div class="meta-line" style="margin-top:6px">+ '+rest.length+' outra(s) atividade(s): '+formatHoursShort(restMs/3600000)+'</div>';
+      html += '<div class="meta-line" style="margin-top:6px">'+tCount('breakdown_more_one','breakdown_more_many', rest.length, { hours: formatHoursShort(restMs/3600000) })+'</div>';
     }
     container.innerHTML = html;
   }
@@ -2014,7 +2261,7 @@
   function exportCsv(){
     const { start, end } = getDateRangeBounds(dashboardRangeDays);
     const nowMs = Date.now();
-    const rows = [['Data','Atividade','Descrição','Horas (HH:MM:SS)','Horas (decimal)']];
+    const rows = [[t('col_date'),t('col_activity'),t('col_description'),t('col_hours_hms'),t('col_hours_decimal')]];
     appData.activities
       .filter(a => { const t = new Date(a.createdAt).getTime(); return t >= start && t < end; })
       .sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt))
@@ -2026,7 +2273,7 @@
     const blob = new Blob(['﻿'+csv], { type:'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'clock-relatorio-'+dayKey(new Date())+'.csv';
+    a.href = url; a.download = t('csv_filename_prefix')+dayKey(new Date())+'.csv';
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
   }
@@ -2038,11 +2285,11 @@
       .filter(a => { const t = new Date(a.createdAt).getTime(); return t >= start && t < end; })
       .sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
     const totalMs = rows.reduce((s,a) => s+getActivityElapsedMs(a, nowMs), 0);
-    let html = '<h1>CLOCK — Relatório de atividades</h1>';
-    html += '<div class="print-sub">Período: últimos '+dashboardRangeDays+' dias · Total: '+formatDuration(totalMs)+'</div>';
-    html += '<table><thead><tr><th>Data</th><th>Atividade</th><th>Descrição</th><th>Horas</th></tr></thead><tbody>';
+    let html = '<h1>'+t('print_title')+'</h1>';
+    html += '<div class="print-sub">'+t('print_period_total',{n:dashboardRangeDays,total:formatDuration(totalMs)})+'</div>';
+    html += '<table><thead><tr><th>'+t('col_date')+'</th><th>'+t('col_activity')+'</th><th>'+t('col_description')+'</th><th>'+t('col_hours')+'</th></tr></thead><tbody>';
     rows.forEach(a => {
-      html += '<tr><td>'+formatDayLabel(dayKey(a.createdAt)).replace(' (hoje)','')+'</td><td>'+escapeHtml(a.name)+'</td><td>'+escapeHtml(a.description)+'</td><td>'+formatDuration(getActivityElapsedMs(a, nowMs))+'</td></tr>';
+      html += '<tr><td>'+formatDayLabel(dayKey(a.createdAt)).replace(t('today_suffix'),'')+'</td><td>'+escapeHtml(a.name)+'</td><td>'+escapeHtml(a.description)+'</td><td>'+formatDuration(getActivityElapsedMs(a, nowMs))+'</td></tr>';
     });
     html += '</tbody></table>';
     document.getElementById('printReport').innerHTML = html;
@@ -2195,7 +2442,7 @@
     }
     // Button shows (and is colored for) the theme a click will switch TO — the opposite
     // of what's active now — not the one currently applied.
-    const label = theme === 'light' ? '🌙 Escuro' : theme === 'dark' ? '☀️ Claro' : '🖥️ Tema';
+    const label = theme === 'light' ? t('theme_dark') : theme === 'dark' ? t('theme_light') : t('theme_system');
     const btn = document.getElementById('btnThemeToggle');
     if(btn){
       btn.textContent = label;
@@ -2232,6 +2479,19 @@
   document.getElementById('btnThemeToggle').onclick = cycleTheme;
   applyTheme(getStoredTheme());
 
+  // ---------- language ----------
+  function setLang(lang){
+    if(!I18N[lang] || lang === currentLang) return;
+    currentLang = lang;
+    try{ localStorage.setItem(LANG_KEY, lang); }catch(e){}
+    applyStaticTranslations();
+    applyTheme(resolveActiveTheme()); // re-translate the theme button's current label
+    render();
+    if(document.getElementById('dashboardModal').style.display === 'flex') renderDashboard();
+  }
+  document.getElementById('btnLangToggle').onclick = () => setLang(currentLang === 'en' ? 'pt-BR' : 'en');
+  applyStaticTranslations();
+
   // ---------- search ----------
   document.getElementById('searchInput').addEventListener('input', (e) => {
     searchQuery = e.target.value.trim().toLowerCase();
@@ -2259,12 +2519,12 @@
   if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 
   if(supportsFS){
-    setFileLinkState('Vincular arquivo', notConnectedPopoverHtml());
+    setFileLinkState(t('file_link'), notConnectedPopoverHtml());
     // Wait for the backup handle to reconnect before the main file, so a corruption
     // recovery prompt during tryAutoReconnect can actually see backupHandle if linked.
     tryAutoReconnectBackup().then(tryAutoReconnect);
   } else {
-    setFileLinkState('Modo exportação manual', fallbackPopoverHtml());
+    setFileLinkState(t('file_manual_mode'), fallbackPopoverHtml());
     (async () => {
       const stored = await idbGetAppData();
       if(stored) appData = normalize(stored); else loadLegacyDraftFromLocalStorage();
@@ -2286,11 +2546,7 @@
     if(!fileHandle) return;
     const { data: fileData } = await readFileHandle(fileHandle);
     if(appData.activities.length > 0 && !dataEquivalent(fileData, appData)){
-      const keepLocal = confirm(
-        'O conteúdo do arquivo no disco é diferente do que está na tela.\n\n'
-        + 'Clique OK para GRAVAR as informações atuais da tela no arquivo (substituindo o que foi alterado por fora).\n'
-        + 'Clique Cancelar para DESCARTAR as informações da tela e usar o conteúdo do arquivo.'
-      );
+      const keepLocal = confirm(t('confirm_external_change'));
       if(keepLocal){ await saveData(); } else { appData = fileData; await saveData(); }
     } else {
       appData = fileData;
