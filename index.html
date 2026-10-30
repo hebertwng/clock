@@ -1428,8 +1428,9 @@
     const name = nameInput.value.trim();
     if(!name){ nameInput.focus(); return; }
     const newId = uid();
+    const backfill = isBackfillMode();
 
-    if(isBackfillMode()){
+    if(backfill){
       const descInput = document.getElementById('actDescModal');
       const timeInput = document.getElementById('actTimeModal');
       const startInput = document.getElementById('actStartModal');
@@ -1474,8 +1475,14 @@
     }
 
     closeNewActivityModal();
-    saveData();
-    render();
+    if(backfill){
+      saveData();
+      render();
+    } else {
+      // Live (non-backfill) activities start running immediately, auto-pausing whatever
+      // was running before — toggleActivity() already does both, plus saveData()+render().
+      toggleActivity(newId);
+    }
     focusNewActivity(newId);
   }
 
