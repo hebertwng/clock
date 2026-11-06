@@ -1393,12 +1393,20 @@
     return !showAllDays && dayKey(selectedDate) !== dayKey(new Date());
   }
 
-  // On the first app-open of a new day, every not-yet-completed activity that isn't
-  // already superseded by a later carried-over copy gets replicated as a fresh entry
-  // for today, so unfinished work keeps showing up until it's checked off.
+  // Runs on the first app-open of a new day, and also live (see lightTick) if the app is
+  // left open across midnight. Every not-yet-completed activity that isn't already
+  // superseded by a later carried-over copy gets replicated as a fresh entry for today,
+  // so unfinished work keeps showing up until it's checked off.
+  // If the activity was still running, its open session is closed exactly at the day
+  // boundary (instead of being left open to silently rack up hours under yesterday's
+  // card) and the new copy is born already running, so the timer keeps ticking without
+  // a gap but each card's own sessions stay within a single calendar day.
   function carryOverIncompleteActivities(){
-    const todayKey = dayKey(new Date());
+    const now = new Date();
+    const todayKey = dayKey(now);
     if(appData.lastCarryOverDate === todayKey) return false;
+
+    const todayStartIso = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
 
     const candidates = appData.activities.filter(a =>
       !a.completed && !a.carriedForwardTo && dayKey(a.createdAt) < todayKey
@@ -1406,12 +1414,14 @@
 
     candidates.forEach(a => {
       const newId = uid();
+      const wasRunning = isRunning(a);
+      if(wasRunning) a.sessions[a.sessions.length-1].end = todayStartIso;
       appData.activities.unshift({
         id: newId,
         name: a.name,
         description: a.description,
         createdAt: nowIso(),
-        sessions: [],
+        sessions: wasRunning ? [{ start: todayStartIso, end: null }] : [],
         manualAdjustmentMs: 0,
         completed: false,
         carriedFrom: a.id
@@ -2060,6 +2070,16 @@
 
   function lightTick(){
     const nowMs = Date.now();
+    // The app may be left open across midnight (e.g. an overnight running activity):
+    // detect the day rollover here too, not just on app-open, so each card keeps only
+    // that day's hours and a fresh card takes over right at the boundary.
+    if(appData.lastCarryOverDate !== null && appData.lastCarryOverDate !== dayKey(new Date(nowMs))){
+      if(carryOverIncompleteActivities()){
+        saveData();
+        render();
+        return;
+      }
+    }
     const running = getRunningActivity();
     document.querySelectorAll('[data-timer]').forEach(el => {
       const id = el.getAttribute('data-timer');
