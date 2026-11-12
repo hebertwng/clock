@@ -49,6 +49,8 @@
   button.primary:hover{background:var(--accent-2)}
   button.danger{background:transparent;color:var(--danger)}
   button.danger:hover{background:var(--danger);color:#fff}
+  button.primary.danger-solid{background:var(--danger);border-color:var(--danger-2)}
+  button.primary.danger-solid:hover{background:var(--danger-2)}
 
   main{max-width:1100px;margin:0 auto;padding:18px 20px}
   label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
@@ -203,7 +205,7 @@
   .timer-row .btn-toggle{flex:0 0 auto;min-height:38px;padding:8px 14px;font-size:13px}
   .act-buttons{display:flex;gap:8px;flex-wrap:wrap}
   .act-buttons button{flex:1;min-width:70px}
-  .empty{color:var(--muted);font-size:14px;text-align:center;padding:30px 0}
+  .empty{color:var(--muted);font-size:14px;text-align:center;padding:30px 0;white-space:pre-line;line-height:1.5}
   .act-date{cursor:pointer;border-bottom:1px dashed transparent}
   .act-date:hover{border-bottom-color:var(--accent);color:var(--accent)}
   .date-edit-row{display:flex;gap:6px;align-items:center;margin-top:2px;flex-wrap:wrap}
@@ -211,6 +213,79 @@
   .date-edit-row button{min-height:28px;padding:2px 8px;font-size:11px}
 
   .load-more-wrap{text-align:center;padding:10px 0 30px}
+
+  /* activity groups: a framed box holding its linked cards; ungrouped cards stay in the loose grid */
+  select{width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    border-radius:9px;padding:10px 12px;font-size:15px;font-family:inherit;min-height:46px}
+  .new-btns{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  /* When a day has groups, its content becomes one wrapping flow: each group box shrinks to
+     fit its own cards (1 card → narrow box, many → wider, wrapping at the screen edge) and
+     independent cards sit beside them at the usual card width. */
+  .day-flow{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;border-radius:12px}
+  .day-flow > .activity-card{flex:0 0 230px;width:230px}
+  .group-cards{display:flex;flex-wrap:wrap;gap:12px}
+  .group-cards > .activity-card{flex:0 0 230px;width:230px}
+  .group-box{--group-color:var(--accent);background:var(--panel-2);border:1px solid var(--border);
+    border-left:4px solid var(--group-color);border-radius:12px;padding:10px 12px 12px;
+    flex:0 1 auto;min-width:258px;max-width:100%;transition:outline-color .15s;
+    background-image:linear-gradient(color-mix(in srgb, var(--group-color) 7%, transparent), color-mix(in srgb, var(--group-color) 7%, transparent))}
+  /* contain:inline-size → the message's text doesn't widen the box; it just fills (and is
+     centered in) whatever width the header/cards give the box, at least one card wide. */
+  .group-box .group-empty{width:auto;min-width:230px;contain:inline-size}
+  .group-box.drag-over-group{outline:2px dashed var(--group-color);outline-offset:2px}
+  .group-box.has-running{box-shadow:0 0 0 1px var(--group-color)}
+  .group-header{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+  .group-header .group-icon-btn{min-height:28px;min-width:28px;padding:0 6px;font-size:13px;border-radius:7px;
+    background:transparent;border-color:transparent;color:var(--muted)}
+  .group-header .group-icon-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--panel)}
+  .group-header .group-icon-btn.danger-icon{color:var(--danger)}
+  .group-header .group-icon-btn.danger-icon:hover{color:#fff;background:var(--danger);border-color:var(--danger-2)}
+  /* "Conclude group" check: same round control as the card's, ringed in the group's color */
+  .group-complete{flex-shrink:0}
+  .group-drag-row{display:flex;justify-content:center;margin:-6px 0 -2px;
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  .group-box.dragging{opacity:.4}
+  .group-box.dragging, .group-box.dragging *{-webkit-user-select:none;user-select:none}
+  .group-complete input[type=checkbox]{border-color:var(--group-color)}
+  .group-complete input[type=checkbox]:disabled{opacity:.4;cursor:default}
+  .group-box.completed .group-cards, .group-box.completed .group-name{opacity:.6}
+  .group-box.completed .group-name{text-decoration:line-through}
+  .color-swatches{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .color-swatch{width:26px;height:26px;min-height:0;padding:0;border-radius:50%;border:2px solid var(--panel);
+    box-shadow:0 0 0 1px var(--border);cursor:pointer}
+  .color-swatch:hover{box-shadow:0 0 0 2px var(--muted)}
+  .color-swatch.selected{box-shadow:0 0 0 2px var(--text)}
+  .color-custom{width:26px;height:26px;min-height:0;padding:0;border:1px dashed var(--muted);border-radius:50%;
+    background:transparent;cursor:pointer;overflow:hidden}
+  .color-custom::-webkit-color-swatch-wrapper{padding:0}
+  .color-custom::-webkit-color-swatch{border:none;border-radius:50%}
+  /* Group description: same behavior as the card's description — a textarea that grows while
+     focused (with its character counter) and shrinks back when focus leaves. */
+  .group-box textarea.group-desc{width:100%;background:transparent;border:1px solid transparent;color:var(--muted);font-size:12px;
+    padding:4px 6px;min-height:30px;height:30px;border-radius:7px;margin:0;display:block;contain:inline-size;
+    resize:vertical;transition:min-height .25s ease;line-height:1.4}
+  .group-box textarea.group-desc:hover, .group-box textarea.group-desc:focus{border-color:var(--border);background:var(--panel);color:var(--text)}
+  .group-box.desc-expanded textarea.group-desc{min-height:120px}
+  .group-desc-meta{display:flex;justify-content:flex-end;margin:2px 0 10px;min-height:4px}
+  .group-desc-meta .counter{display:none}
+  .group-box.desc-expanded .group-desc-meta .counter{display:block}
+  .group-box.collapsed .group-desc-meta{margin-bottom:0}
+  .group-box input.group-name{flex:1 1 60px;width:60px;min-width:0;contain:inline-size;background:transparent;border:1px solid transparent;font-weight:700;
+    font-size:14px;padding:4px 6px;min-height:30px;border-radius:7px}
+  .group-box input.group-name:hover, .group-box input.group-name:focus{border-color:var(--border);background:var(--panel)}
+  .group-total{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;
+    display:block;padding-left:62px;margin:-2px 0 6px;contain:inline-size}
+  .group-empty{font-size:12px;color:var(--muted);text-align:center;padding:14px 10px;border:1px dashed var(--border);
+    border-radius:10px;white-space:pre-line;display:flex;align-items:center;justify-content:center;min-height:80px;line-height:1.5}
+  .loose-zone.drag-over-loose{outline:2px dashed var(--muted);outline-offset:4px}
+  .loose-hint{display:none;font-size:12px;color:var(--muted);text-align:center;padding:14px 10px;
+    border:1px dashed var(--border);border-radius:10px;flex:0 0 230px;align-self:stretch;
+    align-items:center;justify-content:center;min-height:120px}
+  body.card-dragging .loose-hint{display:flex}
+  .group-line{display:flex;align-items:center;gap:6px}
+  .group-select{min-height:26px;padding:2px 6px;font-size:11px;border-radius:6px;width:auto;max-width:100%;
+    color:var(--muted);background:var(--panel-2)}
+  .group-select:hover, .group-select:focus{border-color:var(--accent);color:var(--text)}
 
   .print-report{display:none}
   @media print{
@@ -277,6 +352,11 @@
     .top-bar .left-controls{order:1;gap:6px}
     .top-bar .left-controls .cal-toggle{font-size:12px;padding:7px 10px;min-height:0}
     .top-bar button.primary{order:2;font-size:12px;padding:7px 10px;min-height:0}
+    .top-bar .new-btns{order:2;gap:6px}
+    .top-bar .new-btns button{font-size:12px;padding:7px 10px;min-height:0}
+    .group-box{padding:8px 8px 10px;flex:1 1 100%;min-width:0}
+    .day-flow > .activity-card, .group-cards > .activity-card{flex:1 1 140px;width:auto;min-width:0}
+    .group-box .group-empty, .loose-hint{width:auto;flex:1 1 100%}
     .search-wrap{max-width:100%;flex-basis:100%;order:3}
     .activities-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
     .activity-card.expanded .act-desc{min-height:110px}
@@ -343,7 +423,10 @@
     <input type="text" id="searchInput" data-i18n-placeholder="search_placeholder" placeholder="🔎 Buscar atividade...">
     <button class="search-clear-btn" id="btnSearchClear" style="display:none" data-i18n-title="title_clear_search" data-i18n-aria="title_clear_search" title="Limpar busca" aria-label="Limpar busca">✕</button>
   </div>
-  <button class="primary" id="btnNewActivity" data-i18n="btn_new_activity">+ Nova atividade</button>
+  <div class="new-btns">
+    <button id="btnNewGroup" data-i18n="btn_new_group">+ Novo grupo</button>
+    <button class="primary" id="btnNewActivity" data-i18n="btn_new_activity">+ Nova atividade</button>
+  </div>
 </div>
 <hr class="divider">
 
@@ -357,6 +440,11 @@
     <label for="actName" data-i18n="label_name">Identificação (até 50 caracteres)</label>
     <input type="text" id="actName" maxlength="50" data-i18n-placeholder="placeholder_name" placeholder="Ex: Ajuste no relatório X">
     <div class="counter" id="actNameCounter">0 / 50</div>
+
+    <div id="actGroupModalWrap" style="display:none">
+      <label for="actGroupModal" data-i18n="label_group">Grupo (opcional)</label>
+      <select id="actGroupModal"></select>
+    </div>
 
     <div id="backfillFields" style="display:none">
       <div class="meta-line" style="margin:2px 0 8px" data-i18n="backfill_notice">Registrando atividade para o dia selecionado no calendário.</div>
@@ -381,6 +469,34 @@
     <div class="modal-actions">
       <button id="btnCancelActivity" data-i18n="btn_cancel">Cancelar</button>
       <button class="primary" id="btnAddActivity" data-i18n="btn_create_activity">Criar atividade</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="newGroupModal" style="display:none">
+  <div class="modal-box">
+    <h2 data-i18n="modal_title_new_group">Novo grupo</h2>
+    <label for="groupName" data-i18n="label_group_name">Nome do grupo (até 50 caracteres)</label>
+    <input type="text" id="groupName" maxlength="50" data-i18n-placeholder="placeholder_group_name" placeholder="Ex: Projeto NF-e">
+    <div class="counter" id="groupNameCounter">0 / 50</div>
+    <label for="groupDesc" data-i18n="label_group_desc">Descrição (opcional, até 500 caracteres)</label>
+    <textarea id="groupDesc" maxlength="500" data-i18n-placeholder="placeholder_group_desc" placeholder="Do que se trata este grupo..."></textarea>
+    <label data-i18n="label_group_color">Cor</label>
+    <div class="color-swatches" id="groupColorSwatches"></div>
+    <div class="meta-line" style="margin-top:8px" data-i18n="group_modal_hint">Depois de criado, vincule cards ao grupo pelo seletor 📁 de cada card ou arrastando o card para dentro do grupo.</div>
+    <div class="modal-actions">
+      <button id="btnCancelGroup" data-i18n="btn_cancel">Cancelar</button>
+      <button class="primary" id="btnAddGroup" data-i18n="btn_create_group">Criar grupo</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="confirmModal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="confirmModalMessage">
+  <div class="modal-box">
+    <div id="confirmModalMessage" style="white-space:pre-line;font-size:14px;line-height:1.45"></div>
+    <div class="modal-actions">
+      <button id="btnConfirmCancel" data-i18n="btn_cancel">Cancelar</button>
+      <button class="primary" id="btnConfirmOk"></button>
     </div>
   </div>
 </div>
@@ -550,7 +666,7 @@
       title_goto_prior_day: 'Ir para o card do dia anterior',
       chain_prior_text: '{hours} em dias anteriores',
       empty_search_result: 'Nenhuma atividade encontrada para "{query}".',
-      empty_no_activities: 'Nenhuma atividade criada ainda. Use o botão "+ Nova atividade" para começar.',
+      empty_no_activities: 'Nenhuma atividade criada ainda.\nUse o botão "+ Nova atividade" para começar.',
       empty_day: 'Nenhuma atividade registrada neste dia.',
       title_prev_day: 'Dia anterior',
       title_next_day: 'Próximo dia',
@@ -591,13 +707,45 @@
       btn_import_json: 'Importar JSON',
       alert_invalid_json: 'Arquivo JSON inválido.',
       confirm_corrupted_file: 'O arquivo "{file}" parece corrompido ou ilegível.\n\nClique OK para recuperar os dados do backup vinculado ("{backup}").\nClique Cancelar para iniciar vazio (risco de perder os dados do arquivo principal).',
-      alert_recovered_backup: 'Dados recuperados do arquivo de backup. Confira as atividades antes de continuar.',
-      alert_backup_also_corrupted: 'O arquivo de backup também está corrompido ou ilegível. Nenhum dado pôde ser recuperado automaticamente.',
-      alert_corrupted_no_backup: 'O arquivo "{file}" parece corrompido ou ilegível, e nenhum backup está vinculado. Iniciando vazio.',
+      alert_recovered_backup: 'Dados recuperados do arquivo de backup.\nConfira as atividades antes de continuar.',
+      alert_backup_also_corrupted: 'O arquivo de backup também está corrompido ou ilegível.\nNenhum dado pôde ser recuperado automaticamente.',
+      alert_corrupted_no_backup: 'O arquivo "{file}" parece corrompido ou ilegível, e nenhum backup está vinculado.\nIniciando vazio.',
       confirm_file_diff_content: 'O arquivo "{file}" tem conteúdo diferente das informações atuais na tela, que ainda não foram gravadas nele.\n\nClique OK para GRAVAR as informações atuais neste arquivo (substituindo o conteúdo dele).\nClique Cancelar para DESCARTAR as informações atuais e abrir o conteúdo do arquivo.',
       confirm_seed_diff_content: 'O arquivo "{file}" vinculado tem conteúdo diferente dos dados locais recém-migrados.\n\nClique OK para manter os dados locais (serão gravados no arquivo).\nClique Cancelar para usar o conteúdo do arquivo.',
       confirm_external_change: 'O conteúdo do arquivo no disco é diferente do que está na tela.\n\nClique OK para GRAVAR as informações atuais da tela no arquivo (substituindo o que foi alterado por fora).\nClique Cancelar para DESCARTAR as informações da tela e usar o conteúdo do arquivo.',
-      confirm_delete_activity: 'Excluir a atividade "{name}"? Esta ação não pode ser desfeita.'
+      confirm_delete_activity: 'Excluir a atividade "{name}"?\nEsta ação não pode ser desfeita.',
+      btn_delete: 'Excluir',
+      btn_delete_group: 'Excluir grupo',
+      label_group_desc: 'Descrição (opcional, até 500 caracteres)',
+      placeholder_group_desc: 'Do que se trata este grupo...',
+      placeholder_group_desc_inline: 'Adicionar descrição…',
+      label_group_color: 'Cor',
+      title_drag_reorder_group: 'Arraste para reposicionar o grupo',
+      title_complete_group: 'Marcar o grupo como concluído (conclui todas as atividades dele)',
+      title_reopen_group: 'Reabrir o grupo (desmarca todas as atividades dele)',
+      title_complete_group_empty: 'Vincule atividades ao grupo para poder concluí-lo',
+      title_custom_color: 'Escolher outra cor',
+      btn_new_group: '+ Novo grupo',
+      modal_title_new_group: 'Novo grupo',
+      label_group_name: 'Nome do grupo (até 50 caracteres)',
+      placeholder_group_name: 'Ex: Projeto NF-e',
+      group_modal_hint: 'Depois de criado, vincule cards ao grupo pelo seletor 📁 de cada card ou arrastando o card para dentro do grupo.',
+      btn_create_group: 'Criar grupo',
+      label_group: 'Grupo (opcional)',
+      group_none: 'Sem grupo',
+      group_new_option: '+ Novo grupo…',
+      title_card_group: 'Grupo da atividade',
+      group_count_one: '{n} atividade · {duration}',
+      group_count_many: '{n} atividades · {duration}',
+      title_group_collapse: 'Recolher grupo',
+      title_group_expand: 'Expandir grupo',
+      title_group_add_activity: 'Nova atividade neste grupo',
+      title_delete_group: 'Excluir grupo (as atividades continuam, sem grupo)',
+      title_rename_group: 'Renomear grupo',
+      confirm_delete_group: 'Excluir o grupo "{name}"?\n\nAs atividades vinculadas NÃO serão excluídas — elas apenas ficarão independentes (sem grupo).',
+      empty_group: 'Nenhuma atividade neste grupo neste dia.\nArraste um card para cá ou use o seletor 📁 do card.',
+      loose_drop_hint: 'Solte aqui para deixar a atividade independente (sem grupo)',
+      col_group: 'Grupo'
     },
     'en': {
       sync_warning_text: 'The linked file was changed outside of CLOCK (another tab, another computer, or another program).',
@@ -663,7 +811,7 @@
       title_goto_prior_day: "Go to the previous day's card",
       chain_prior_text: '{hours} on previous days',
       empty_search_result: 'No activity found for "{query}".',
-      empty_no_activities: 'No activity created yet. Use the "+ New activity" button to get started.',
+      empty_no_activities: 'No activity created yet.\nUse the "+ New activity" button to get started.',
       empty_day: 'No activity logged on this day.',
       title_prev_day: 'Previous day',
       title_next_day: 'Next day',
@@ -704,13 +852,45 @@
       btn_import_json: 'Import JSON',
       alert_invalid_json: 'Invalid JSON file.',
       confirm_corrupted_file: 'The file "{file}" appears to be corrupted or unreadable.\n\nClick OK to recover the data from the linked backup ("{backup}").\nClick Cancel to start empty (risk of losing the main file\'s data).',
-      alert_recovered_backup: 'Data recovered from the backup file. Check the activities before continuing.',
-      alert_backup_also_corrupted: 'The backup file is also corrupted or unreadable. No data could be recovered automatically.',
-      alert_corrupted_no_backup: 'The file "{file}" appears to be corrupted or unreadable, and no backup is linked. Starting empty.',
+      alert_recovered_backup: 'Data recovered from the backup file.\nCheck the activities before continuing.',
+      alert_backup_also_corrupted: 'The backup file is also corrupted or unreadable.\nNo data could be recovered automatically.',
+      alert_corrupted_no_backup: 'The file "{file}" appears to be corrupted or unreadable, and no backup is linked.\nStarting empty.',
       confirm_file_diff_content: 'The file "{file}" has different content from what\'s currently on screen, which hasn\'t been saved to it yet.\n\nClick OK to SAVE the current on-screen data to this file (overwriting its content).\nClick Cancel to DISCARD the current data and open the file\'s content instead.',
       confirm_seed_diff_content: 'The linked file "{file}" has different content from the recently migrated local data.\n\nClick OK to keep the local data (it will be saved to the file).\nClick Cancel to use the file\'s content instead.',
       confirm_external_change: "The file's content on disk is different from what's on screen.\n\nClick OK to SAVE the current on-screen data to the file (overwriting the outside change).\nClick Cancel to DISCARD the on-screen data and use the file's content instead.",
-      confirm_delete_activity: 'Delete the activity "{name}"? This action cannot be undone.'
+      confirm_delete_activity: 'Delete the activity "{name}"?\nThis action cannot be undone.',
+      btn_delete: 'Delete',
+      btn_delete_group: 'Delete group',
+      label_group_desc: 'Description (optional, up to 500 characters)',
+      placeholder_group_desc: 'What is this group about...',
+      placeholder_group_desc_inline: 'Add a description…',
+      label_group_color: 'Color',
+      title_drag_reorder_group: 'Drag to reposition the group',
+      title_complete_group: 'Mark the group as completed (completes all of its activities)',
+      title_reopen_group: 'Reopen the group (unchecks all of its activities)',
+      title_complete_group_empty: 'Link activities to the group to be able to complete it',
+      title_custom_color: 'Pick another color',
+      btn_new_group: '+ New group',
+      modal_title_new_group: 'New group',
+      label_group_name: 'Group name (up to 50 characters)',
+      placeholder_group_name: 'E.g.: NF-e project',
+      group_modal_hint: 'Once created, link cards to the group with each card\'s 📁 selector or by dragging the card into the group.',
+      btn_create_group: 'Create group',
+      label_group: 'Group (optional)',
+      group_none: 'No group',
+      group_new_option: '+ New group…',
+      title_card_group: "Activity's group",
+      group_count_one: '{n} activity · {duration}',
+      group_count_many: '{n} activities · {duration}',
+      title_group_collapse: 'Collapse group',
+      title_group_expand: 'Expand group',
+      title_group_add_activity: 'New activity in this group',
+      title_delete_group: 'Delete group (activities are kept, ungrouped)',
+      title_rename_group: 'Rename group',
+      confirm_delete_group: 'Delete the group "{name}"?\n\nThe linked activities will NOT be deleted — they will just become independent (no group).',
+      empty_group: 'No activity in this group on this day.\nDrag a card here or use the card\'s 📁 selector.',
+      loose_drop_hint: 'Drop here to make the activity independent (no group)',
+      col_group: 'Group'
     }
   };
 
@@ -744,7 +924,11 @@
     });
   }
 
-  let appData = { activities: [], lastCarryOverDate: null };
+  let appData = { activities: [], groups: [], lastCarryOverDate: null };
+  let pendingGroupLinkActivityId = null; // card waiting to be linked to the group being created
+  let pendingNewActivityGroupId = null;  // group preselected when "+" is clicked on a group header
+
+  const GROUP_COLORS = ['#2f6fed','#1f9d55','#c4820e','#d23b3b','#8e44ad','#16a085','#d35400','#6b7385'];
   let fileHandle = null;
   let backupHandle = null;
   let tickTimer = null;
@@ -798,6 +982,8 @@
   }
   function activityMatchesSearch(a, query){
     if((a.name||'').toLowerCase().includes(query)) return true;
+    const g = a.groupId ? getGroup(a.groupId) : null;
+    if(g && ((g.name||'').toLowerCase().includes(query) || (g.description||'').toLowerCase().includes(query))) return true;
     if((a.description||'').toLowerCase().includes(query)) return true;
     const dk = dayKey(a.createdAt);
     if(dk.toLowerCase().includes(query)) return true;
@@ -874,14 +1060,27 @@
   function normalize(data){
     if(!data || typeof data !== 'object') data = {};
     if(!Array.isArray(data.activities)) data.activities = [];
+    if(!Array.isArray(data.groups)) data.groups = [];
+    data.groups = data.groups.filter(g => g && typeof g.id === 'string');
+    data.groups.forEach((g, i) => {
+      if(typeof g.name !== 'string') g.name = '';
+      if(!/^#[0-9a-f]{6}$/i.test(g.color || '')) g.color = GROUP_COLORS[i % GROUP_COLORS.length];
+      if(typeof g.description !== 'string') g.description = '';
+      if(typeof g.collapsed !== 'boolean') g.collapsed = false;
+      if(typeof g.createdAt !== 'string') g.createdAt = nowIso();
+    });
+    const groupIds = new Set(data.groups.map(g => g.id));
     data.activities.forEach(a => {
       if(typeof a.manualAdjustmentMs !== 'number') a.manualAdjustmentMs = 0;
       if(!Array.isArray(a.sessions)) a.sessions = [];
       if(typeof a.description !== 'string') a.description = '';
       if(typeof a.completed !== 'boolean') a.completed = false;
+      // A card pointing at a group that no longer exists simply becomes independent.
+      if(a.groupId != null && !groupIds.has(a.groupId)) delete a.groupId;
     });
     return {
       activities: data.activities,
+      groups: data.groups,
       lastCarryOverDate: typeof data.lastCarryOverDate === 'string' ? data.lastCarryOverDate : null
     };
   }
@@ -1341,13 +1540,195 @@
     render();
   }
 
-  function deleteActivity(id){
+  // In-app replacement for window.confirm(): native dialogs can be suppressed (embedded
+  // browsers/webviews auto-answer them with "Cancel" without showing anything), which made
+  // deleting silently do nothing. Resolves true on confirm, false on cancel/Esc/backdrop.
+  let confirmResolver = null;
+  function confirmDialog(message, { okLabel, danger=false } = {}){
+    if(confirmResolver) confirmResolver(false);
+    const modal = document.getElementById('confirmModal');
+    const okBtn = document.getElementById('btnConfirmOk');
+    document.getElementById('confirmModalMessage').textContent = message;
+    okBtn.textContent = okLabel || 'OK';
+    okBtn.classList.toggle('danger-solid', danger);
+    modal.style.display = 'flex';
+    requestAnimationFrame(() => okBtn.focus());
+    return new Promise(resolve => { confirmResolver = resolve; });
+  }
+  function closeConfirmDialog(result){
+    document.getElementById('confirmModal').style.display = 'none';
+    const resolve = confirmResolver;
+    confirmResolver = null;
+    if(resolve) resolve(result);
+  }
+
+  async function deleteActivity(id){
     const activity = appData.activities.find(a => a.id === id);
     if(!activity) return;
-    if(!confirm(t('confirm_delete_activity', { name: activity.name }))) return;
+    if(!await confirmDialog(t('confirm_delete_activity', { name: activity.name }), { okLabel: t('btn_delete'), danger:true })) return;
     appData.activities = appData.activities.filter(a => a.id !== id);
     saveData();
     render();
+  }
+
+  // ---------- activity groups ----------
+  // Groups are global (not per day). A card links to one through its optional `groupId`;
+  // cards without it stay independent exactly as before. Deleting a group never deletes
+  // cards — it only unlinks them. Carry-over copies inherit the group, so a group follows
+  // its unfinished work from day to day.
+  function getGroup(id){
+    return (appData.groups || []).find(g => g.id === id) || null;
+  }
+
+  function nextFreeGroupColor(){
+    const used = new Set(appData.groups.map(g => g.color));
+    return GROUP_COLORS.find(c => !used.has(c)) || GROUP_COLORS[appData.groups.length % GROUP_COLORS.length];
+  }
+
+  function isValidColor(c){ return typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c); }
+
+  function createGroup(name, { color, description='' } = {}){
+    const group = {
+      id: uid(), name: name.slice(0,50), description: description.slice(0,500),
+      color: isValidColor(color) ? color : nextFreeGroupColor(), collapsed: false, createdAt: nowIso()
+    };
+    appData.groups.unshift(group);
+    return group;
+  }
+
+  // A group is "completed" when it has activities and every one of them (on any day) is
+  // completed — derived, not stored, so it can never disagree with its cards (e.g. adding a
+  // new card to a finished group simply reopens it).
+  function isGroupCompleted(id){
+    const items = appData.activities.filter(a => a.groupId === id);
+    return items.length > 0 && items.every(a => a.completed);
+  }
+
+  // Checking the group completes every activity linked to it (each along its carry-over
+  // chain, like checking a card does), pausing any of them that is running; unchecking
+  // reopens them all.
+  function toggleGroupCompleted(id){
+    const items = appData.activities.filter(a => a.groupId === id);
+    if(!items.length) return;
+    const target = !isGroupCompleted(id);
+    if(target){
+      const nowIso_ = new Date().toISOString();
+      items.forEach(a => { if(isRunning(a)) a.sessions[a.sessions.length-1].end = nowIso_; });
+    }
+    items.forEach(a => setCompletedAlongChain(a, target));
+    saveData();
+    render();
+  }
+
+  function setGroupDescription(id, text){
+    const group = getGroup(id);
+    if(!group) return;
+    group.description = (text || '').trim().slice(0,500);
+    saveData();
+  }
+
+  // Palette of preset swatches + a native picker for any other color. `selected` gets a ring.
+  function colorSwatchesHtml(selected, attr){
+    const presets = GROUP_COLORS.map(c =>
+      '<button type="button" class="color-swatch'+(c.toLowerCase() === (selected||'').toLowerCase() ? ' selected' : '')+'" '+attr+'="'+c+'" style="background:'+c+'" aria-label="'+c+'" title="'+c+'"></button>'
+    ).join('');
+    const isCustom = selected && !GROUP_COLORS.some(c => c.toLowerCase() === selected.toLowerCase());
+    return presets + '<input type="color" class="color-custom'+(isCustom ? ' selected' : '')+'" '+attr+'-custom value="'+(isValidColor(selected) ? selected : '#2f6fed')+'" title="'+t('title_custom_color')+'" aria-label="'+t('title_custom_color')+'">';
+  }
+
+  function setActivityGroup(id, groupId){
+    const activity = appData.activities.find(a => a.id === id);
+    if(!activity) return;
+    if(groupId && getGroup(groupId)) activity.groupId = groupId;
+    else delete activity.groupId;
+  }
+
+  async function deleteGroup(id){
+    const group = getGroup(id);
+    if(!group) return;
+    if(!await confirmDialog(t('confirm_delete_group', { name: group.name }), { okLabel: t('btn_delete_group'), danger:true })) return;
+    appData.activities.forEach(a => { if(a.groupId === id) delete a.groupId; });
+    appData.groups = appData.groups.filter(g => g.id !== id);
+    saveData();
+    render();
+  }
+
+  function renameGroup(id, name){
+    const group = getGroup(id);
+    const trimmed = (name || '').trim().slice(0,50);
+    if(!group || !trimmed) { render(); return; }
+    group.name = trimmed;
+    saveData();
+    render();
+  }
+
+  function toggleGroupCollapsed(id){
+    const group = getGroup(id);
+    if(!group) return;
+    group.collapsed = !group.collapsed;
+    saveData();
+    render();
+  }
+
+  function groupHasAnyActivity(id){
+    return appData.activities.some(a => a.groupId === id);
+  }
+
+  let newGroupColor = null;
+  function renderNewGroupSwatches(){
+    const wrap = document.getElementById('groupColorSwatches');
+    wrap.innerHTML = colorSwatchesHtml(newGroupColor, 'data-new-group-color');
+    wrap.querySelectorAll('[data-new-group-color]').forEach(btn => {
+      btn.onclick = () => { newGroupColor = btn.getAttribute('data-new-group-color'); renderNewGroupSwatches(); };
+    });
+    const custom = wrap.querySelector('[data-new-group-color-custom]');
+    if(custom) custom.onchange = () => { newGroupColor = custom.value; renderNewGroupSwatches(); };
+  }
+
+  function openNewGroupModal(linkActivityId){
+    pendingGroupLinkActivityId = linkActivityId || null;
+    document.getElementById('newGroupModal').style.display = 'flex';
+    const input = document.getElementById('groupName');
+    input.value = '';
+    document.getElementById('groupDesc').value = '';
+    newGroupColor = nextFreeGroupColor();
+    renderNewGroupSwatches();
+    updateGroupNameCounter();
+    requestAnimationFrame(() => input.focus());
+  }
+  function closeNewGroupModal(){
+    document.getElementById('newGroupModal').style.display = 'none';
+    pendingGroupLinkActivityId = null;
+  }
+  function updateGroupNameCounter(){
+    const input = document.getElementById('groupName');
+    const counter = document.getElementById('groupNameCounter');
+    counter.textContent = input.value.length + ' / 50';
+    counter.classList.toggle('over', input.value.length >= 50);
+  }
+  function addGroup(){
+    const input = document.getElementById('groupName');
+    const name = input.value.trim();
+    if(!name){ input.focus(); return; }
+    const group = createGroup(name, { color: newGroupColor, description: document.getElementById('groupDesc').value.trim() });
+    const linkId = pendingGroupLinkActivityId;
+    if(linkId) setActivityGroup(linkId, group.id);
+    closeNewGroupModal();
+    saveData();
+    render();
+    requestAnimationFrame(() => {
+      const box = document.querySelector('.group-box[data-group-id="'+group.id+'"]');
+      if(box) box.scrollIntoView({ behavior:'smooth', block:'center' });
+    });
+  }
+
+  function groupOptionsHtml(selectedId, { includeNew=false, prefix='' } = {}){
+    let html = '<option value="">'+prefix+escapeHtml(t('group_none'))+'</option>';
+    appData.groups.forEach(g => {
+      html += '<option value="'+g.id+'"'+(g.id === selectedId ? ' selected' : '')+'>'+prefix+escapeHtml(g.name)+'</option>';
+    });
+    if(includeNew) html += '<option value="__new__">'+escapeHtml(t('group_new_option'))+'</option>';
+    return html;
   }
 
   function updateActivityField(id, field, value){
@@ -1424,7 +1805,8 @@
         sessions: wasRunning ? [{ start: todayStartIso, end: null }] : [],
         manualAdjustmentMs: 0,
         completed: false,
-        carriedFrom: a.id
+        carriedFrom: a.id,
+        ...(a.groupId ? { groupId: a.groupId } : {})
       });
       a.carriedForwardTo = newId;
     });
@@ -1439,6 +1821,8 @@
     if(!name){ nameInput.focus(); return; }
     const newId = uid();
     const backfill = isBackfillMode();
+    const groupSelect = document.getElementById('actGroupModal');
+    const chosenGroupId = (groupSelect && groupSelect.value && getGroup(groupSelect.value)) ? groupSelect.value : null;
 
     if(backfill){
       const descInput = document.getElementById('actDescModal');
@@ -1482,6 +1866,10 @@
       selectedDate = new Date();
       calendarViewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
       showAllDays = false;
+    }
+    if(chosenGroupId){
+      const created = appData.activities.find(a => a.id === newId);
+      if(created) created.groupId = chosenGroupId;
     }
 
     closeNewActivityModal();
@@ -1541,6 +1929,13 @@
     input.value = '';
     updateCounters();
 
+    const groupWrap = document.getElementById('actGroupModalWrap');
+    const groupSelect = document.getElementById('actGroupModal');
+    const preselected = pendingNewActivityGroupId && getGroup(pendingNewActivityGroupId) ? pendingNewActivityGroupId : '';
+    groupSelect.innerHTML = groupOptionsHtml(preselected);
+    groupSelect.value = preselected;
+    groupWrap.style.display = appData.groups.length ? 'block' : 'none';
+
     const backfillWrap = document.getElementById('backfillFields');
     const title = document.getElementById('modalTitle');
     if(isBackfillMode()){
@@ -1560,6 +1955,7 @@
   }
   function closeNewActivityModal(){
     document.getElementById('newActivityModal').style.display = 'none';
+    pendingNewActivityGroupId = null;
   }
 
   // ---------- rendering ----------
@@ -1639,16 +2035,14 @@
 
     if(isSearching && groups.length === 0){
       container.innerHTML = '<div class="empty">'+t('empty_search_result',{query:escapeHtml(searchQuery)})+'</div>';
-    } else if(!isSearching && groups.length === 0 && !showAllDays){
+    } else if(!isSearching && groups.length === 0 && !showAllDays && appData.groups.length === 0){
       container.innerHTML = '<div class="empty">'+t('empty_no_activities')+'</div>';
     } else {
       container.innerHTML = groupsToShow.map(g => {
         const dayTotalMs = isSearching
           ? g.items.reduce((sum,a) => sum + getActivityElapsedMs(a, nowMs), 0)
           : getDayTotalMs(g.key, nowMs);
-        const cardsHtml = g.items.length
-          ? '<div class="activities-grid">' + g.items.map(a => activityCardHtml(a, nowMs)).join('') + '</div>'
-          : '<div class="empty">'+t('empty_day')+'</div>';
+        const cardsHtml = dayContentHtml(g, nowMs, isSearching);
         const navHtml = (showAllDays || isSearching) ? '' :
           '<button class="day-nav-btn" data-day-nav-prev title="'+t('title_prev_day')+'" aria-label="'+t('title_prev_day')+'">‹</button>'
           + '<button class="day-nav-btn" data-day-nav-next title="'+t('title_next_day')+'" aria-label="'+t('title_next_day')+'">›</button>';
@@ -1667,6 +2061,94 @@
     const loadMoreBtn = document.getElementById('btnLoadMoreDays');
     if(loadMoreBtn) loadMoreBtn.onclick = () => { allDaysVisibleCount += 30; render(); };
     updateFooter(nowMs);
+  }
+
+  // Lays out one day: a box per group that has cards that day, then the independent cards.
+  // Groups follow the user's order (appData.groups, rearranged by dragging a group's handle),
+  // with completed groups after the open ones — mirroring how completed cards sink. A group
+  // with no cards anywhere yet (just created / emptied) is shown on the day being viewed so
+  // there's somewhere to drop cards into.
+  function dayContentHtml(g, nowMs, isSearching){
+    const groupOrder = [];
+    const byGroup = {};
+    const loose = [];
+    g.items.forEach(a => {
+      if(a.groupId && getGroup(a.groupId)){
+        if(!byGroup[a.groupId]){ byGroup[a.groupId] = []; groupOrder.push(a.groupId); }
+        byGroup[a.groupId].push(a);
+      } else {
+        loose.push(a);
+      }
+    });
+    const isViewedDay = !isSearching && (showAllDays ? g.key === dayKey(new Date()) : g.key === dayKey(selectedDate));
+    if(isViewedDay){
+      const emptyGroups = appData.groups.filter(gr => !byGroup[gr.id] && !groupHasAnyActivity(gr.id));
+      emptyGroups.forEach(gr => { byGroup[gr.id] = []; });
+      groupOrder.unshift(...emptyGroups.map(gr => gr.id));
+    }
+    const orderIdx = id => appData.groups.findIndex(gr => gr.id === id);
+    const doneMap = {};
+    groupOrder.forEach(id => { doneMap[id] = isGroupCompleted(id) ? 1 : 0; });
+    groupOrder.sort((x, y) => (doneMap[x] - doneMap[y]) || (orderIdx(x) - orderIdx(y)));
+
+    if(!groupOrder.length){
+      return g.items.length
+        ? '<div class="activities-grid">' + g.items.map(a => activityCardHtml(a, nowMs)).join('') + '</div>'
+        : '<div class="empty">'+t('empty_day')+'</div>';
+    }
+
+    // One wrapping flow for the whole day: groups (each sized by its own cards) followed by
+    // the independent cards. The flow itself is the "loose zone": dropping a card on its
+    // empty space (outside any group box) makes the card independent again.
+    return '<div class="day-flow loose-zone" data-loose-zone="'+g.key+'">'
+      + groupOrder.map(gid => groupBoxHtml(getGroup(gid), byGroup[gid], g.key, nowMs)).join('')
+      + loose.map(a => activityCardHtml(a, nowMs)).join('')
+      + '<div class="loose-hint">'+t('loose_drop_hint')+'</div>'
+      + '</div>';
+  }
+
+  function groupTotalText(items, nowMs){
+    const ms = items.reduce((sum,a) => sum + getActivityElapsedMs(a, nowMs), 0);
+    return tCount('group_count_one', 'group_count_many', items.length, { duration: formatDuration(ms) });
+  }
+
+  function groupBoxHtml(group, items, dayKeyStr, nowMs){
+    const hasRunning = items.some(isRunning);
+    const collapsed = group.collapsed;
+    const hasAny = groupHasAnyActivity(group.id);
+    const completed = isGroupCompleted(group.id);
+    const completeTitle = hasAny ? t(completed ? 'title_reopen_group' : 'title_complete_group') : t('title_complete_group_empty');
+    // Handle on its own centered top row, like the cards' — keeps the name row roomy.
+    const header = '<div class="group-drag-row">'
+      +   '<div class="drag-handle group-drag-handle" data-group-drag-handle="'+group.id+'" title="'+t('title_drag_reorder_group')+'" aria-label="'+t('title_drag_reorder_group')+'">'
+      +     '<svg viewBox="0 0 16 10" width="16" height="10" fill="currentColor">'
+      +       '<circle cx="2" cy="2" r="1.3"/><circle cx="8" cy="2" r="1.3"/><circle cx="14" cy="2" r="1.3"/>'
+      +       '<circle cx="2" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="14" cy="8" r="1.3"/>'
+      +     '</svg>'
+      +   '</div>'
+      + '</div>'
+      + '<div class="group-header">'
+      + '<button class="group-icon-btn" data-group-collapse="'+group.id+'" title="'+t(collapsed?'title_group_expand':'title_group_collapse')+'" aria-label="'+t(collapsed?'title_group_expand':'title_group_collapse')+'" aria-expanded="'+(!collapsed)+'">'+(collapsed?'▸':'▾')+'</button>'
+      + '<label class="complete-check group-complete" title="'+completeTitle+'">'
+      +   '<input type="checkbox" data-group-complete="'+group.id+'"'+(completed?' checked':'')+(hasAny?'':' disabled')+' aria-label="'+t('title_complete_group')+'">'
+      + '</label>'
+      + '<input type="text" class="group-name" data-group-name="'+group.id+'" maxlength="50" value="'+escapeHtml(group.name)+'" title="'+t('title_rename_group')+'" aria-label="'+t('title_rename_group')+'">'
+      + '<button class="group-icon-btn" data-group-add="'+group.id+'" title="'+t('title_group_add_activity')+'" aria-label="'+t('title_group_add_activity')+'">＋</button>'
+      + '<button class="group-icon-btn danger-icon" data-group-delete="'+group.id+'" title="'+t('title_delete_group')+'" aria-label="'+t('title_delete_group')+'">✕</button>'
+      + '</div>';
+    const descText = group.description || '';
+    const desc = '<textarea class="group-desc" data-group-desc="'+group.id+'" maxlength="500" rows="1" placeholder="'+t('placeholder_group_desc_inline')+'" aria-label="'+t('label_group_desc')+'">'+escapeHtml(descText)+'</textarea>'
+      + '<div class="group-desc-meta"><div class="counter" data-group-desc-counter="'+group.id+'">'+descText.length+' / 500</div></div>';
+    let body = '';
+    if(!collapsed){
+      body = items.length
+        ? '<div class="group-cards">' + items.map(a => activityCardHtml(a, nowMs)).join('') + '</div>'
+        : '<div class="group-empty">'+t('empty_group')+'</div>';
+    }
+    return '<div class="group-box'+(collapsed?' collapsed':'')+(completed?' completed':'')+(hasRunning?' has-running':'')+'" data-group-id="'+group.id+'" data-group-day="'+dayKeyStr+'" style="--group-color:'+escapeHtml(group.color)+'">'
+      + header
+      + '<div class="group-total" data-group-total="'+group.id+'" data-group-day="'+dayKeyStr+'">'+(hasRunning?'⏱ ':'')+groupTotalText(items, nowMs)+'</div>'
+      + desc + body + '</div>';
   }
 
   function shiftSelectedDay(delta){
@@ -1737,6 +2219,9 @@
       +     '<div class="counter" data-desc-counter="'+a.id+'">'+ (a.description||'').length +' / 500</div>'
       +   '</div>'
       +   metaLineHtml
+      +   '<div class="group-line"><select class="group-select" data-group-select="'+a.id+'" title="'+t('title_card_group')+'" aria-label="'+t('title_card_group')+'">'
+      +     groupOptionsHtml(a.groupId || '', { includeNew:true, prefix:'📁 ' })
+      +   '</select></div>'
       +   chainPriorHtml
       +   timerHtml
       +   buttonsHtml
@@ -1859,29 +2344,106 @@
     render();
   }
 
+  // Moves a group to the dropped-on group's slot in appData.groups: after it when dragging
+  // downward/rightward, before it when dragging upward/leftward — so a drop onto the
+  // immediately next group also swaps them.
+  function reorderGroups(sourceId, targetId){
+    const from = appData.groups.findIndex(g => g.id === sourceId);
+    const to = appData.groups.findIndex(g => g.id === targetId);
+    if(from === -1 || to === -1 || from === to) return;
+    const [moved] = appData.groups.splice(from, 1);
+    const targetIdx = appData.groups.findIndex(g => g.id === targetId);
+    appData.groups.splice(from < to ? targetIdx + 1 : targetIdx, 0, moved);
+    saveData();
+    render();
+  }
+
+  // Same pointer-driven drag as the cards' handle, but for whole group boxes: drop onto
+  // another group box of the same day to take its position.
+  function bindGroupDragEvents(){
+    document.querySelectorAll('[data-group-drag-handle]').forEach(handle => {
+      handle.addEventListener('pointerdown', (e) => {
+        if(e.pointerType === 'mouse' && e.button !== 0) return;
+        const box = handle.closest('.group-box');
+        if(!box) return;
+        e.preventDefault();
+        const sourceId = handle.getAttribute('data-group-drag-handle');
+        const sourceDay = box.closest('.day-group');
+        let targetBox = null;
+        try{ handle.setPointerCapture(e.pointerId); }catch(err){}
+        box.classList.add('dragging');
+
+        const onMove = (ev) => {
+          if(targetBox) targetBox.classList.remove('drag-over-group');
+          targetBox = null;
+          const el = document.elementFromPoint(ev.clientX, ev.clientY);
+          const over = el && el.closest && el.closest('.group-box');
+          if(over && over !== box && over.closest('.day-group') === sourceDay){
+            over.classList.add('drag-over-group');
+            targetBox = over;
+          }
+        };
+        const onUp = () => {
+          handle.removeEventListener('pointermove', onMove);
+          handle.removeEventListener('pointerup', onUp);
+          handle.removeEventListener('pointercancel', onUp);
+          box.classList.remove('dragging');
+          if(targetBox){
+            targetBox.classList.remove('drag-over-group');
+            reorderGroups(sourceId, targetBox.getAttribute('data-group-id'));
+          }
+        };
+        handle.addEventListener('pointermove', onMove);
+        handle.addEventListener('pointerup', onUp);
+        handle.addEventListener('pointercancel', onUp);
+      });
+    });
+  }
+
   function bindDragAndDropEvents(){
+    bindGroupDragEvents();
     document.querySelectorAll('[data-drag-handle]').forEach(handle => {
       handle.addEventListener('pointerdown', (e) => {
         if(e.pointerType === 'mouse' && e.button !== 0) return;
         const card = handle.closest('.activity-card');
         if(!card) return;
         dragSourceId = handle.getAttribute('data-drag-handle');
-        let currentTargetCard = null;
+        // Drop target is one of: another card (reorder + adopt that card's group), a group
+        // box (link to the group) or the loose zone (unlink → independent card). All must be
+        // within the same day, as before.
+        let target = null; // { kind:'card'|'group'|'loose', el }
+        const sourceDay = card.closest('.day-group');
         try{ handle.setPointerCapture(e.pointerId); }catch(err){}
         card.classList.add('dragging');
+        document.body.classList.add('card-dragging');
 
+        const clearTarget = () => {
+          if(!target) return;
+          target.el.classList.remove('drag-over','drag-over-group','drag-over-loose');
+          target = null;
+        };
         const onMove = (ev) => {
-          if(currentTargetCard) currentTargetCard.classList.remove('drag-over');
-          currentTargetCard = null;
+          clearTarget();
           const el = document.elementFromPoint(ev.clientX, ev.clientY);
-          const targetCard = el && el.closest && el.closest('.activity-card');
-          if(targetCard && targetCard !== card){
-            const sourceDay = card.closest('.day-group');
-            const targetDay = targetCard.closest('.day-group');
-            if(sourceDay && targetDay && sourceDay === targetDay){
-              targetCard.classList.add('drag-over');
-              currentTargetCard = targetCard;
-            }
+          if(!el || !el.closest) return;
+          const inSameDay = (node) => node && node.closest('.day-group') === sourceDay;
+          const targetCard = el.closest('.activity-card');
+          if(targetCard && targetCard !== card && inSameDay(targetCard)){
+            targetCard.classList.add('drag-over');
+            target = { kind:'card', el:targetCard };
+            return;
+          }
+          if(targetCard) return; // hovering the dragged card itself
+          const groupBox = el.closest('.group-box');
+          if(groupBox && inSameDay(groupBox)){
+            groupBox.classList.add('drag-over-group');
+            target = { kind:'group', el:groupBox };
+            return;
+          }
+          const looseZone = el.closest('.loose-zone');
+          if(looseZone && inSameDay(looseZone)){
+            looseZone.classList.add('drag-over-loose');
+            target = { kind:'loose', el:looseZone };
           }
         };
         const onUp = () => {
@@ -1889,10 +2451,20 @@
           handle.removeEventListener('pointerup', onUp);
           handle.removeEventListener('pointercancel', onUp);
           card.classList.remove('dragging');
-          if(currentTargetCard){
-            currentTargetCard.classList.remove('drag-over');
-            const targetId = currentTargetCard.getAttribute('data-id');
-            reorderActivities(dragSourceId, targetId);
+          document.body.classList.remove('card-dragging');
+          const dropped = target;
+          clearTarget();
+          if(dropped){
+            if(dropped.kind === 'card'){
+              const targetId = dropped.el.getAttribute('data-id');
+              const targetActivity = appData.activities.find(a => a.id === targetId);
+              setActivityGroup(dragSourceId, targetActivity ? targetActivity.groupId : null);
+              reorderActivities(dragSourceId, targetId);
+            } else {
+              setActivityGroup(dragSourceId, dropped.kind === 'group' ? dropped.el.getAttribute('data-group-id') : null);
+              saveData();
+              render();
+            }
           }
           dragSourceId = null;
         };
@@ -1916,6 +2488,57 @@
     });
     document.querySelectorAll('[data-copy-desc]').forEach(btn => {
       btn.onclick = () => copyDescription(btn.getAttribute('data-copy-desc'));
+    });
+    document.querySelectorAll('[data-group-select]').forEach(sel => {
+      sel.onchange = () => {
+        const id = sel.getAttribute('data-group-select');
+        if(sel.value === '__new__'){
+          const activity = appData.activities.find(a => a.id === id);
+          sel.value = (activity && activity.groupId) || '';
+          openNewGroupModal(id);
+          return;
+        }
+        setActivityGroup(id, sel.value || null);
+        saveData();
+        render();
+      };
+    });
+    document.querySelectorAll('[data-group-collapse]').forEach(btn => {
+      btn.onclick = () => toggleGroupCollapsed(btn.getAttribute('data-group-collapse'));
+    });
+    document.querySelectorAll('[data-group-delete]').forEach(btn => {
+      btn.onclick = () => deleteGroup(btn.getAttribute('data-group-delete'));
+    });
+    document.querySelectorAll('[data-group-add]').forEach(btn => {
+      btn.onclick = () => {
+        pendingNewActivityGroupId = btn.getAttribute('data-group-add');
+        openNewActivityModal();
+      };
+    });
+    document.querySelectorAll('[data-group-complete]').forEach(cb => {
+      cb.onchange = () => toggleGroupCompleted(cb.getAttribute('data-group-complete'));
+    });
+    document.querySelectorAll('[data-group-desc]').forEach(ta => {
+      const gid = ta.getAttribute('data-group-desc');
+      const counterEl = document.querySelector('[data-group-desc-counter="'+gid+'"]');
+      ta.addEventListener('input', () => { if(counterEl) counterEl.textContent = ta.value.length + ' / 500'; });
+      ta.onchange = () => setGroupDescription(gid, ta.value);
+      ta.onkeydown = (e) => {
+        if(e.key === 'Escape'){
+          e.preventDefault();
+          const g = getGroup(gid);
+          ta.value = g ? (g.description||'') : '';
+          if(counterEl) counterEl.textContent = ta.value.length + ' / 500';
+          ta.blur();
+        }
+      };
+    });
+    document.querySelectorAll('[data-group-name]').forEach(inp => {
+      inp.onchange = () => renameGroup(inp.getAttribute('data-group-name'), inp.value);
+      inp.onkeydown = (e) => {
+        if(e.key === 'Enter'){ e.preventDefault(); inp.blur(); }
+        else if(e.key === 'Escape'){ e.preventDefault(); const g = getGroup(inp.getAttribute('data-group-name')); inp.value = g ? g.name : ''; inp.blur(); }
+      };
     });
     document.querySelectorAll('[data-edit-date]').forEach(el => {
       el.onclick = () => { editingDateId = el.getAttribute('data-edit-date'); render(); };
@@ -2089,6 +2712,13 @@
     document.querySelectorAll('[data-day-total]').forEach(el => {
       const key = el.getAttribute('data-day-total');
       el.textContent = t('day_total_label', { duration: formatDuration(getDayTotalMs(key, nowMs)) });
+    });
+    document.querySelectorAll('[data-group-total]').forEach(el => {
+      const gid = el.getAttribute('data-group-total');
+      const dk = el.getAttribute('data-group-day');
+      const items = appData.activities.filter(a => a.groupId === gid && dayKey(a.createdAt) === dk
+        && (!searchQuery || activityMatchesSearch(a, searchQuery)));
+      el.textContent = (items.some(isRunning) ? '⏱ ' : '') + groupTotalText(items, nowMs);
     });
     updateFooter(nowMs);
     if(running){
@@ -2358,16 +2988,21 @@
     return s;
   }
 
+  function groupNameOf(a){
+    const g = a.groupId ? getGroup(a.groupId) : null;
+    return g ? g.name : '';
+  }
+
   function exportCsv(){
     const { start, end } = getDateRangeBounds(dashboardRangeDays);
     const nowMs = Date.now();
-    const rows = [[t('col_date'),t('col_activity'),t('col_description'),t('col_hours_hms'),t('col_hours_decimal')]];
+    const rows = [[t('col_date'),t('col_group'),t('col_activity'),t('col_description'),t('col_hours_hms'),t('col_hours_decimal')]];
     appData.activities
       .filter(a => { const t = new Date(a.createdAt).getTime(); return t >= start && t < end; })
       .sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt))
       .forEach(a => {
         const ms = getActivityElapsedMs(a, nowMs);
-        rows.push([ dayKey(a.createdAt), a.name, a.description, formatDuration(ms), (ms/3600000).toFixed(2) ]);
+        rows.push([ dayKey(a.createdAt), groupNameOf(a), a.name, a.description, formatDuration(ms), (ms/3600000).toFixed(2) ]);
       });
     const csv = rows.map(r => r.map(csvEscape).join(';')).join('\r\n');
     const blob = new Blob(['﻿'+csv], { type:'text/csv;charset=utf-8' });
@@ -2387,9 +3022,9 @@
     const totalMs = rows.reduce((s,a) => s+getActivityElapsedMs(a, nowMs), 0);
     let html = '<h1>'+t('print_title')+'</h1>';
     html += '<div class="print-sub">'+t('print_period_total',{n:dashboardRangeDays,total:formatDuration(totalMs)})+'</div>';
-    html += '<table><thead><tr><th>'+t('col_date')+'</th><th>'+t('col_activity')+'</th><th>'+t('col_description')+'</th><th>'+t('col_hours')+'</th></tr></thead><tbody>';
+    html += '<table><thead><tr><th>'+t('col_date')+'</th><th>'+t('col_group')+'</th><th>'+t('col_activity')+'</th><th>'+t('col_description')+'</th><th>'+t('col_hours')+'</th></tr></thead><tbody>';
     rows.forEach(a => {
-      html += '<tr><td>'+formatDayLabel(dayKey(a.createdAt)).replace(t('today_suffix'),'')+'</td><td>'+escapeHtml(a.name)+'</td><td>'+escapeHtml(a.description)+'</td><td>'+formatDuration(getActivityElapsedMs(a, nowMs))+'</td></tr>';
+      html += '<tr><td>'+formatDayLabel(dayKey(a.createdAt)).replace(t('today_suffix'),'')+'</td><td>'+escapeHtml(groupNameOf(a))+'</td><td>'+escapeHtml(a.name)+'</td><td>'+escapeHtml(a.description)+'</td><td>'+formatDuration(getActivityElapsedMs(a, nowMs))+'</td></tr>';
     });
     html += '</tbody></table>';
     document.getElementById('printReport').innerHTML = html;
@@ -2435,6 +3070,40 @@
     if(e.target.id === 'newActivityModal') closeNewActivityModal();
   });
 
+  document.getElementById('btnConfirmOk').onclick = () => closeConfirmDialog(true);
+  document.getElementById('btnConfirmCancel').onclick = () => closeConfirmDialog(false);
+  document.getElementById('confirmModal').addEventListener('mousedown', (e) => {
+    if(e.target.id === 'confirmModal') closeConfirmDialog(false);
+  });
+  // Capture phase + stopImmediatePropagation: while the dialog is open, Esc/Enter/Space
+  // belong to it alone and must not reach the global shortcuts (play/pause, new activity…).
+  document.addEventListener('keydown', (e) => {
+    if(document.getElementById('confirmModal').style.display !== 'flex') return;
+    if(e.key === 'Escape'){ e.preventDefault(); closeConfirmDialog(false); }
+    else if(e.key === 'Tab'){
+      const ok = document.getElementById('btnConfirmOk'), cancel = document.getElementById('btnConfirmCancel');
+      e.preventDefault();
+      (document.activeElement === ok ? cancel : ok).focus();
+      return;
+    }
+    else if(e.key !== 'Enter' && e.key !== ' ') { e.preventDefault(); }
+    e.stopImmediatePropagation();
+  }, true);
+
+  document.getElementById('btnNewGroup').onclick = () => openNewGroupModal(null);
+  document.getElementById('btnCancelGroup').onclick = closeNewGroupModal;
+  document.getElementById('btnAddGroup').onclick = addGroup;
+  document.getElementById('groupName').addEventListener('input', updateGroupNameCounter);
+  document.getElementById('groupName').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){ e.preventDefault(); addGroup(); }
+  });
+  document.getElementById('newGroupModal').addEventListener('mousedown', (e) => {
+    if(e.target.id === 'newGroupModal') closeNewGroupModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && document.getElementById('newGroupModal').style.display === 'flex') closeNewGroupModal();
+  });
+
   document.getElementById('btnDashboard').onclick = openDashboardModal;
   document.getElementById('btnBackToActivities').onclick = closeDashboardModal;
   document.getElementById('btnNewActivityDash').onclick = openNewActivityModal;
@@ -2467,6 +3136,7 @@
     if(isEditableTarget(e.target)) return;
     if(document.getElementById('dashboardModal').style.display === 'flex') return;
     if(document.getElementById('newActivityModal').style.display === 'flex') return;
+    if(document.getElementById('newGroupModal').style.display === 'flex') return;
     e.preventDefault();
     openNewActivityModal();
   });
@@ -2480,6 +3150,7 @@
     if(e.target && e.target.tagName === 'BUTTON') return; // avoid double-toggling a focused toggle button
     if(document.getElementById('dashboardModal').style.display === 'flex') return;
     if(document.getElementById('newActivityModal').style.display === 'flex') return;
+    if(document.getElementById('newGroupModal').style.display === 'flex') return;
     const activity = getLastActiveActivity();
     if(!activity) return;
     e.preventDefault();
@@ -2490,11 +3161,23 @@
     if(isEditableTarget(e.target)) return;
     if(document.getElementById('dashboardModal').style.display === 'flex') return;
     if(document.getElementById('newActivityModal').style.display === 'flex') return;
+    if(document.getElementById('newGroupModal').style.display === 'flex') return;
     if(showAllDays || searchQuery) return;
     e.preventDefault();
     shiftSelectedDay(e.key === 'ArrowLeft' ? -1 : 1);
   });
 
+  // Group description grows while focused, like the card description below.
+  document.addEventListener('focusin', (e) => {
+    if(!(e.target.classList && e.target.classList.contains('group-desc'))) return;
+    const box = e.target.closest('.group-box');
+    if(box) box.classList.add('desc-expanded');
+  });
+  document.addEventListener('focusout', (e) => {
+    if(!(e.target.classList && e.target.classList.contains('group-desc'))) return;
+    const box = e.target.closest('.group-box');
+    if(box) box.classList.remove('desc-expanded');
+  });
   document.addEventListener('focusin', (e) => {
     const isExpandableField = e.target.classList && (e.target.classList.contains('act-name') || e.target.classList.contains('act-desc'));
     if(!isExpandableField) return;

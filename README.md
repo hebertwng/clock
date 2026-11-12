@@ -12,6 +12,7 @@ CLOCK é um aplicativo web (PWA) para cronometrar atividades do dia a dia, organ
 
 - **Cronômetro por atividade** — inicia/pausa com um clique, atalho de teclado (barra de espaço) ou pelo botão de play/pause fixo na tela.
 - **Calendário e navegação por dia**, com virada automática de atividades não concluídas para o dia seguinte.
+- **Grupos de atividades** — crie grupos (ex.: um projeto) com nome, descrição e cor (definida na criação), e vincule cards a eles pelo seletor 📁 do card, pelo botão ＋ do grupo ou arrastando o card para dentro/fora do grupo. Cards sem grupo continuam independentes; excluir um grupo não exclui os cards. Os grupos podem ser reposicionados arrastando a alça (⠿) no topo de cada um. Marcar o grupo como concluído conclui todas as atividades dele (e desmarcar reabre todas). Os cards levados para o dia seguinte mantêm o grupo.
 - **Conclusão em cadeia** — marcar uma atividade como concluída propaga o status para os cards anteriores que a originaram.
 - **Dashboard** com gráficos de horas/atividades por período, detalhamento por atividade, exportação em CSV e impressão.
 - **Armazenamento local em camadas**:
