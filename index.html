@@ -1782,10 +1782,95 @@
   // boundary (instead of being left open to silently rack up hours under yesterday's
   // card) and the new copy is born already running, so the timer keeps ticking without
   // a gap but each card's own sessions stay within a single calendar day.
+  // Self-heal after the system clock was moved forward and then back (e.g. the Windows date
+  // set to next week and restored). While the clock was ahead, carry-over created copies
+  // dated in the "future" and closed running sessions at a future midnight; once the clock
+  // returns those copies sit on days that haven't happened, so the real cards stop being
+  // carried and day totals count bogus full days. Detected by cards dated after today or by
+  // lastCarryOverDate being after today. Each future copy is folded back into the card it
+  // came from (newest first, so a chain of copies unwinds link by link): the original gets
+  // its link cleared, its group/name/description edits, and — if it was running when the
+  // clock jumped — its session ends at the copy's real pause time, or keeps running if the
+  // copy still is. Cards created directly while the clock was ahead are moved to now.
+  function healClockRollback(now){
+    const todayKey = dayKey(now);
+    const nowMs = now.getTime();
+    const rolledBack = !!appData.lastCarryOverDate && appData.lastCarryOverDate > todayKey;
+    const future = appData.activities.filter(a => dayKey(a.createdAt) > todayKey);
+    if(!rolledBack && !future.length) return false;
+
+    const nowIsoStr = new Date(nowMs).toISOString();
+    const isRealTime = iso => !!iso && new Date(iso).getTime() <= nowMs;
+    future.sort((x, y) => new Date(y.createdAt) - new Date(x.createdAt));
+    const removed = new Set();
+    const sessionsMs = a => a.sessions.reduce((sum, s) => sum + ((s.end ? new Date(s.end).getTime() : nowMs) - new Date(s.start).getTime()), 0);
+    const totalBefore = new Map(); // real cards whose bogus session gets shortened → total they showed
+
+    future.forEach(c => {
+      const p = c.carriedFrom ? appData.activities.find(a => a.id === c.carriedFrom && !removed.has(a.id)) : null;
+      if(!p){
+        // created by hand while the clock was ahead: keep it, as of now
+        c.createdAt = nowIsoStr;
+        return;
+      }
+      const cLast = c.sessions[c.sessions.length-1];
+      const cRunning = !!(cLast && cLast.end === null);
+      const pLast = p.sessions[p.sessions.length-1];
+      if(pLast && pLast.end && !isRealTime(pLast.end)){
+        if(isRealTime(pLast.start) && !totalBefore.has(p.id)) totalBefore.set(p.id, getActivityElapsedMs(p, nowMs));
+        // p was running when the clock jumped: its session was closed at a future midnight
+        if(cRunning) pLast.end = null;
+        else {
+          // The copy's real pause time (taken after the clock came back). When p is itself a
+          // future copy (start ahead of the clock) keep that time as-is even though it's before
+          // p's start, so it passes on to the next fold down the chain; only a real p is
+          // clamped so its session can't go negative.
+          const realEnd = cLast && isRealTime(cLast.end) ? cLast.end : nowIsoStr;
+          pLast.end = isRealTime(pLast.start)
+            ? new Date(Math.max(new Date(pLast.start).getTime(), new Date(realEnd).getTime())).toISOString()
+            : realEnd;
+        }
+      } else if(cRunning && !isRunning(p)){
+        p.sessions.push({ start: nowIsoStr, end: null }); // started while ahead: keep it running from now
+      }
+      if(c.groupId && !p.groupId) p.groupId = c.groupId;
+      if(c.name && c.name !== p.name) p.name = c.name;
+      if(c.description && c.description !== p.description) p.description = c.description;
+      if(c.completed) p.completed = true;
+      delete p.carriedForwardTo;
+      removed.add(c.id);
+    });
+    appData.activities = appData.activities.filter(a => !removed.has(a.id));
+
+    // Any remaining timestamp still ahead of the clock is clamped to now.
+    appData.activities.forEach(a => {
+      a.sessions.forEach(s => {
+        if(!isRealTime(s.start)) s.start = nowIsoStr;
+        if(s.end && !isRealTime(s.end)) s.end = nowIsoStr;
+      });
+    });
+
+    // If the user had already fixed such a card by hand (a big negative manual adjustment that
+    // cancelled the bogus days), shortening the session would now push it below zero. Keep the
+    // total the card showed instead — bounded by the real time actually recorded.
+    totalBefore.forEach((before, id) => {
+      const a = appData.activities.find(x => x.id === id);
+      if(!a) return;
+      const real = sessionsMs(a);
+      if(real + (a.manualAdjustmentMs || 0) >= 0) return;
+      a.manualAdjustmentMs = Math.min(Math.max(before, 0), real) - real;
+    });
+    return true;
+  }
+
   function carryOverIncompleteActivities(){
     const now = new Date();
     const todayKey = dayKey(now);
-    if(appData.lastCarryOverDate === todayKey) return false;
+    const healed = healClockRollback(now);
+    // After a heal, run carry-over for today even if it already ran: cards whose future copies
+    // were just folded back have lost their forward link and need today's copy; cards already
+    // carried today keep theirs, so they aren't duplicated.
+    if(!healed && appData.lastCarryOverDate === todayKey) return false;
 
     const todayStartIso = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
 
@@ -1812,7 +1897,7 @@
     });
 
     appData.lastCarryOverDate = todayKey;
-    return candidates.length > 0;
+    return healed || candidates.length > 0;
   }
 
   function addActivity(){
