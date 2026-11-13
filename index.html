@@ -742,6 +742,8 @@
       title_group_add_activity: 'Nova atividade neste grupo',
       title_delete_group: 'Excluir grupo (as atividades continuam, sem grupo)',
       title_rename_group: 'Renomear grupo',
+      confirm_remove_group_day: 'Remover o grupo "{name}" de {day}?\n\nSó as atividades deste dia ficarão independentes (sem grupo) — nenhuma atividade é excluída.\nNos outros dias o grupo continua como está.',
+      btn_remove_group_day: 'Remover deste dia',
       confirm_delete_group: 'Excluir o grupo "{name}"?\n\nAs atividades vinculadas NÃO serão excluídas — elas apenas ficarão independentes (sem grupo).',
       empty_group: 'Nenhuma atividade neste grupo neste dia.\nArraste um card para cá ou use o seletor 📁 do card.',
       loose_drop_hint: 'Solte aqui para deixar a atividade independente (sem grupo)',
@@ -887,6 +889,8 @@
       title_group_add_activity: 'New activity in this group',
       title_delete_group: 'Delete group (activities are kept, ungrouped)',
       title_rename_group: 'Rename group',
+      confirm_remove_group_day: 'Remove the group "{name}" from {day}?\n\nOnly this day\'s activities will become independent (no group) — no activity is deleted.\nOn other days the group stays as it is.',
+      btn_remove_group_day: 'Remove from this day',
       confirm_delete_group: 'Delete the group "{name}"?\n\nThe linked activities will NOT be deleted — they will just become independent (no group).',
       empty_group: 'No activity in this group on this day.\nDrag a card here or use the card\'s 📁 selector.',
       loose_drop_hint: 'Drop here to make the activity independent (no group)',
@@ -1596,21 +1600,28 @@
     return group;
   }
 
-  // A group is "completed" when it has activities and every one of them (on any day) is
+  // A group box is per day: the same group shows up on every day that has cards linked to
+  // it (it follows its unfinished cards through carry-over), so actions taken on a group box
+  // — completing, reopening, removing — only touch that day's cards. Name, description,
+  // color, collapsed state and position are shared by all days.
+  function groupItemsOnDay(id, dayKeyStr){
+    return appData.activities.filter(a => a.groupId === id && dayKey(a.createdAt) === dayKeyStr);
+  }
+
+  // The group box of a day is "completed" when that day has cards in it and all of them are
   // completed — derived, not stored, so it can never disagree with its cards (e.g. adding a
   // new card to a finished group simply reopens it).
-  function isGroupCompleted(id){
-    const items = appData.activities.filter(a => a.groupId === id);
+  function isGroupCompleted(id, dayKeyStr){
+    const items = groupItemsOnDay(id, dayKeyStr);
     return items.length > 0 && items.every(a => a.completed);
   }
 
-  // Checking the group completes every activity linked to it (each along its carry-over
-  // chain, like checking a card does), pausing any of them that is running; unchecking
-  // reopens them all.
-  function toggleGroupCompleted(id){
-    const items = appData.activities.filter(a => a.groupId === id);
+  // Checking the box completes every card of the group on that day (each along its carry-over
+  // chain, like checking a card does), pausing any that is running; unchecking reopens them.
+  function toggleGroupCompleted(id, dayKeyStr){
+    const items = groupItemsOnDay(id, dayKeyStr);
     if(!items.length) return;
-    const target = !isGroupCompleted(id);
+    const target = !isGroupCompleted(id, dayKeyStr);
     if(target){
       const nowIso_ = new Date().toISOString();
       items.forEach(a => { if(isRunning(a)) a.sessions[a.sessions.length-1].end = nowIso_; });
@@ -1643,12 +1654,22 @@
     else delete activity.groupId;
   }
 
-  async function deleteGroup(id){
+  // Removing a group from a day only unlinks that day's cards — the group (and its cards on
+  // other days) stays. Only when no other day has cards in it is the group itself deleted.
+  // Cards are never deleted either way.
+  async function deleteGroup(id, dayKeyStr){
     const group = getGroup(id);
     if(!group) return;
-    if(!await confirmDialog(t('confirm_delete_group', { name: group.name }), { okLabel: t('btn_delete_group'), danger:true })) return;
-    appData.activities.forEach(a => { if(a.groupId === id) delete a.groupId; });
-    appData.groups = appData.groups.filter(g => g.id !== id);
+    const onOtherDays = appData.activities.some(a => a.groupId === id && dayKey(a.createdAt) !== dayKeyStr);
+    if(onOtherDays){
+      const msg = t('confirm_remove_group_day', { name: group.name, day: formatDayLabel(dayKeyStr).replace(t('today_suffix'), '') });
+      if(!await confirmDialog(msg, { okLabel: t('btn_remove_group_day'), danger:true })) return;
+      groupItemsOnDay(id, dayKeyStr).forEach(a => { delete a.groupId; });
+    } else {
+      if(!await confirmDialog(t('confirm_delete_group', { name: group.name }), { okLabel: t('btn_delete_group'), danger:true })) return;
+      appData.activities.forEach(a => { if(a.groupId === id) delete a.groupId; });
+      appData.groups = appData.groups.filter(g => g.id !== id);
+    }
     saveData();
     render();
   }
@@ -2173,7 +2194,7 @@
     }
     const orderIdx = id => appData.groups.findIndex(gr => gr.id === id);
     const doneMap = {};
-    groupOrder.forEach(id => { doneMap[id] = isGroupCompleted(id) ? 1 : 0; });
+    groupOrder.forEach(id => { doneMap[id] = isGroupCompleted(id, g.key) ? 1 : 0; });
     groupOrder.sort((x, y) => (doneMap[x] - doneMap[y]) || (orderIdx(x) - orderIdx(y)));
 
     if(!groupOrder.length){
@@ -2200,8 +2221,8 @@
   function groupBoxHtml(group, items, dayKeyStr, nowMs){
     const hasRunning = items.some(isRunning);
     const collapsed = group.collapsed;
-    const hasAny = groupHasAnyActivity(group.id);
-    const completed = isGroupCompleted(group.id);
+    const hasAny = groupItemsOnDay(group.id, dayKeyStr).length > 0;
+    const completed = isGroupCompleted(group.id, dayKeyStr);
     const completeTitle = hasAny ? t(completed ? 'title_reopen_group' : 'title_complete_group') : t('title_complete_group_empty');
     // Handle on its own centered top row, like the cards' — keeps the name row roomy.
     const header = '<div class="group-drag-row">'
@@ -2592,7 +2613,7 @@
       btn.onclick = () => toggleGroupCollapsed(btn.getAttribute('data-group-collapse'));
     });
     document.querySelectorAll('[data-group-delete]').forEach(btn => {
-      btn.onclick = () => deleteGroup(btn.getAttribute('data-group-delete'));
+      btn.onclick = () => deleteGroup(btn.getAttribute('data-group-delete'), btn.closest('.group-box').getAttribute('data-group-day'));
     });
     document.querySelectorAll('[data-group-add]').forEach(btn => {
       btn.onclick = () => {
@@ -2601,7 +2622,7 @@
       };
     });
     document.querySelectorAll('[data-group-complete]').forEach(cb => {
-      cb.onchange = () => toggleGroupCompleted(cb.getAttribute('data-group-complete'));
+      cb.onchange = () => toggleGroupCompleted(cb.getAttribute('data-group-complete'), cb.closest('.group-box').getAttribute('data-group-day'));
     });
     document.querySelectorAll('[data-group-desc]').forEach(ta => {
       const gid = ta.getAttribute('data-group-desc');
